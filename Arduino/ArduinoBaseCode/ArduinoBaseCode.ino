@@ -27,11 +27,9 @@ Encoder myEnc(20, 21);
 #define leftDirection 8
 #define goPin 22
 
-
-const int derivativeDelay = 20000; //delay in derivative in microscends
-
-float P = 1.0; //P gain
-float D = 1.0; //D gain
+float Kp = 1.0; //P gain
+float Kd = 1.0; //D gain
+float PD = 0;
 
 const int deadZone = 1; //+-angle where action will not occur
 const int highAngle = 60; //+- angle of no return
@@ -39,15 +37,17 @@ const int measurements = 2; //measurements to perform derivative
 const float minDC = .2; //minimum duty cycle
 const float maxDC = 1; //max duty cycle
 const int maxMotorPWM = 255;
+const int derivativeDelay = 8000;
+
 
 long oldPosition = 0;
 int angle[measurements];
 long newPosition = 0;
 float d = 0;
+long dt = 0;
 
 unsigned long currentTime = 0;
 unsigned long lastTime = 0;
-float PD = 0;
 
 bool Stat = false;
 
@@ -61,27 +61,35 @@ void setup() {
   Serial.begin(9600);
 }
 
-
-
-
 void loop() {
-  P = (float) 1 / (highAngle - deadZone);
-  D = 0;
-  
+  Kp = (float) 1 / (highAngle - deadZone);
+  Kd = 0;
+
   while (Stat)
   {
-    derivative(derivativeDelay); //Delay in microseconds
-    PD = abs(P * angle[measurements-1] + D * d);
+    currentTime = millis();
+    for (int i = 0; i < measurements; i++)
+    {
+      checkEnc();
+      delayMicroseconds(derivativeDelay);
+    }
+    dt = (currentTime - lastTime) * 1000;
+    derivative();
+    lastTime = currentTime;
+    Serial.print(angle[measurements - 1]); Serial.print(","); Serial.println(d);
+
+    
+    PD = abs(Kp * angle[measurements - 1] + Kd * d);
     PD = max(PD, minDC);
     PD = min(PD, maxDC);
 
-    if (angle[measurements-1] > deadZone)
+    if (angle[measurements - 1] > deadZone)
     {
       backward(PD);
       Serial.print("Backward at "); Serial.print(PD * 100); Serial.println("%");
 
     }
-    else if (angle[measurements-1] < -deadZone)
+    else if (angle[measurements - 1] < -deadZone)
     {
       forward(PD);
       Serial.print("Forward at "); Serial.print(PD * 100); Serial.println("%");
@@ -103,7 +111,7 @@ void loop() {
 void loggingData()
 {
   Serial.print("Tick : "); Serial.println(newPosition);
-  Serial.print("Angle : "); Serial.println(angle[measurements-1]);
+  Serial.print("Angle : "); Serial.println(angle[measurements - 1]);
   Serial.print("d : "); Serial.println(d, 4);
 }
 

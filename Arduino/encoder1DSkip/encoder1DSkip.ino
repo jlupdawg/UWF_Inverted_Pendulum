@@ -14,12 +14,7 @@ long oldPosition = 0;
 const int measurements = 5;
 float angle[measurements];
 long newPosition = 0;
-float k = 0;
 float d = 0;
-
-
-int deadZone = 1; //+-angle where action will not occur
-int highAngle = 60; //+- angle of no return
 
 unsigned long currentTime = 0;
 unsigned long lastTime = 0;
