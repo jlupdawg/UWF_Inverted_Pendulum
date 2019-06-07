@@ -1,0 +1,19 @@
+Equipment:
+
+Motor -
+Hansen Corp. Model 116-1121627
+
+Motor Driver -
+Pololu Dual G2 High-Power Motor Driver 18v22 Shield for Arduino
+https://www.pololu.com/product/2517/specs
+
+Battery - 
+Tattu R-Line 1300mah 4s 95c Lipo Battery Pack with XT60 Plug
+https://www.genstattu.com/tattu-r-line-1300mah-95c-4s1p-lipo-battery-pack.html
+
+Microprocessor - 
+Arduino Mega 2560
+https://store.arduino.cc/usa/mega-2560-r3
+
+Encoder - 
+Honeywell 600EN-128-CBL 
