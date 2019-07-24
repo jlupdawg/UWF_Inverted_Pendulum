@@ -12,13 +12,15 @@ def backward(speed):
         
 def derivative(new, last, thisTime, lastTime):
     dt = thisTime - lastTime
-    derive = (new - last)/(dt/1000)
-    lastTime = thisTime
+    #print ("DT = " + str(dt))
+    derive = (new - last)/(float(dt)/1000)
+    #print("Derivative = " + str(derive))
     return derive
 
 def PID(angle, Kp = 50, Kd = 0, highAngle = 30, setPoint = 0, lastTime = 0, oldAngle = 0, stat = 0):
 
     thisTime = int(round(time.time() * 1000))
+    #print ("This Time = " + str(thisTime))
     derive = derivative(angle, oldAngle,thisTime, lastTime)
     lastTime = thisTime
 
