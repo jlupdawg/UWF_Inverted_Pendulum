@@ -58,15 +58,20 @@ class Target:
             hsv_img = cv.cvtColor(img, cv.COLOR_BGR2HSV)
  
             #threshold the image to isolate two colors
-            cv.inRange(hsv_img,(165,145,100),(250,210,160),threshold_img1) #red
-            cv.inRange(hsv_img,(0,145,100),(10,210,160),threshold_img1a)   #red again
+	    cv.inRange(hsv_img,(0,100,100),(10,255,255),threshold_img1) #red
+            cv.inRange(hsv_img,(160,100,100),(179,255,255),threshold_img1a)   #red again
             cv.add(threshold_img1,threshold_img1a,threshold_img1)          #this is combining the two limits for red
 	    #cv.inRange(hsv_img,(36,25,25),(70,255,255),threshold_img2)  #Green
-            cv.inRange(hsv_img,(105,180,40),(120,260,100),threshold_img2)  #blue
-	    cv.inRange(hsv_img,(0,180,40),(42,260,100),threshold_img2b)  #blue
-            cv.add(threshold_img2,threshold_img2b,threshold_img2)          #this is combining the two limits for red
- 
-            #determine the moments of the two objects
+	    cv.inRange(hsv_img,(85,60,50),(135,255,255),threshold_img2)  #blue
+	   	
+            
+	    #filter out noise
+	    kernel = np.ones((5,5), np.uint8) 
+	    threshold_img2 = cv.erode(threshold_img2, kernel, iterations=2) 
+	    threshold_img1 = cv.erode(threshold_img1, kernel, iterations=1) 
+	    
+	   
+	    #determine the moments of the two objects
             moments1=cv.moments(threshold_img1)
             moments2=cv.moments(threshold_img2)
             area1 = moments1['m00'] 
@@ -79,22 +84,21 @@ class Target:
                 x=0
              
             #there can be noise in the video so ignore objects with small areas
-            if (area1 >200000):
+            if (area1 >10000):
                 #x and y coordinates of the center of the object is found by dividing the 1,0 and 0,1 moments by the area
                 x1=int(moments1['m10']/area1)
                 y1=int(moments1['m01']/area1)
  
                 #draw circle
-                cv.circle(img,(x1,y1),2,(0,0,255),20)
+                cv.circle(img,(x1,y1),50,(0,0,255),2)
  
- 
-            if (area2 >100000):
+            if (area2 >10000):
                 #x and y coordinates of the center of the object is found by dividing the 1,0 and 0,1 moments by the area
                 x2=int(moments2['m10']/area2)
                 y2=int(moments2['m01']/area2)
  
                 #draw circle
-                cv.circle(img,(x2,y2),2,(255,0,0),20)
+                cv.circle(img,(x2,y2),50,(255,0,0),2)
  
 		#draw line measure angle
                 cv.line(img,(x1,y1),(x2,y2),(0,255,0),4,cv.LINE_AA)
@@ -115,7 +119,7 @@ class Target:
 		angle = map(angle, 90, 0, 0, 90)
 	    elif angle < 0:
 		angle = map(angle, -90, 0, 0, -90)
-
+		'''
 	    #Make call to controls
 	    if(status == 1):
 		#print ("Last Time = " + str(lastTime))
@@ -126,7 +130,7 @@ class Target:
     	    else:
         	Control.PID(0)
      		break
-	
+		'''
 	    #this is our angle text
             cv.putText(img,str(angle),(int(x1)+50,(int(y2)+int(y1))/2),font, 4,(255,255,255))
 
