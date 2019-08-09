@@ -1,0 +1,13 @@
+From fresh jetpack installation: 
+
+sudo apt-get update
+sudo apt-get -y install python3-pip
+sudo apt-get update
+pip3 install -U numpy
+
+follow this tutorial to install servokit/busio/board @ https://www.youtube.com/watch?v=RnGUTny1hG8
+
+Notes:
+Using nomachine client to remotely access the nano via ethernet
+	For nomachine to work properly, you will need to follow the creating a virtual monitor tutorial
+Download UWF_Inverted_Pendulum repo @ https://github.com/jlupdawg/UWF_Inverted_Pendulum.git
