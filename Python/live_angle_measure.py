@@ -21,9 +21,7 @@ def map(x,in_min,in_max,out_min,out_max):
 class Target:
 
     def __init__(self):
-        #self.capture = cv.VideoCapture(gstreamer_pipeline(flip_method=0), cv.CAP_GSTREAMER)
-        self.capture = cv.VideoCapture(0)
-        print("SETUP")
+        self.capture = cv.VideoCapture(gstreamer_pipeline(flip_method=0), cv.CAP_GSTREAMER)
 
     def run(self):
         #initiate font
@@ -52,7 +50,6 @@ class Target:
         time.sleep(3)
 
         while self.capture.isOpened():
-            print("MADE IT")
             #capture the image from the cam
             ret, img=self.capture.read()
  
@@ -144,7 +141,7 @@ class Target:
             cv.putText(img,str(angle),(int(x1)+50,(int(y2)+int(y1))/2),font, 4,(255,255,255))
 
             #display frames to users
-            #cv.imshow("Target",img)
+            cv.imshow("Target",img)
 
             # Listen for ESC or ENTER key
             c = cv.waitKey(7) % 0x100
