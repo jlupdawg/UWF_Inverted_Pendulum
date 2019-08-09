@@ -2,7 +2,7 @@ import cv2 as cv
 import math
 import numpy as np
  
-#import Controls_Code_Function as Control
+import Controls_Code_Function as Control
 import time
 
 def gstreamer_pipeline (capture_width=1280, capture_height=720, display_width=1280, display_height=720, framerate=60, flip_method=0) :   
@@ -125,7 +125,7 @@ class Target:
                 angle = map(angle, 90, 0, 0, 90)
             elif angle < 0:
                 angle = map(angle, -90, 0, 0, -90)
-            '''
+            
             #Make call to controls
             if(status == 1):
 		#print ("Last Time = " + str(lastTime))
@@ -136,12 +136,12 @@ class Target:
             else:
                 Control.PID(0)
                 break
-            '''
+            
 	    #this is our angle text
-            cv.putText(img,str(angle),(int(x1)+50,(int(y2)+int(y1))/2),font, 4,(255,255,255))
+            #cv.putText(img,str(angle),(int(x1)+50,int(int(y2)+int(y1)/2)),font, 4,(255,255,255))
 
             #display frames to users
-            cv.imshow("Target",img)
+            #cv.imshow("Target",img)
 
             # Listen for ESC or ENTER key
             c = cv.waitKey(7) % 0x100

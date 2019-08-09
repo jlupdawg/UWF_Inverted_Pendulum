@@ -1,11 +1,11 @@
 To re-enable monitor...
-cd cd /usr/share/X11/xorg.conf.d/
+cd /usr/share/X11/xorg.conf.d/
 sudo gedit xorg.conf
 
 and clear the file then save and restart.
 
 to disable the monitor...
-cd cd /usr/share/X11/xorg.conf.d/
+cd /usr/share/X11/xorg.conf.d/
 sudo gedit xorg.conf
 
 and paste:

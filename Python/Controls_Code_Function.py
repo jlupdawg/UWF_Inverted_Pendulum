@@ -16,7 +16,7 @@ pca = PCA9685(i2c_bus0)
 pca.frequency = 50
 PWMLimit = 100
 
-def forward(speed):
+def forward(DC):
     DC = int((DC) * (65534) / (100))
     pca.channels[1].duty_cycle = 0  #direction to forward
     DC = int(hex(DC),16)  #make DC into HEX for the library
@@ -24,9 +24,9 @@ def forward(speed):
         pca.channels[0].duty_cycle = DC
     except:
         pca.channels[0].duty_cycle = 0
-    print("Forward at " + str(speed) + " speed")
+    print("Forward at " + str(DC) + " speed")
 
-def backward(speed):
+def backward(DC):
     DC = int((DC) * (65534) / (100))
     pca.channels[1].duty_cycle = 1  #direction to backward
     DC = int(hex(DC),16)  #make DC into HEX for the library
@@ -34,7 +34,7 @@ def backward(speed):
         pca.channels[0].duty_cycle = DC
     except:
         pca.channels[0].duty_cycle = 0
-    print("Backward at " + str(speed) + " speed")
+    print("Backward at " + str(DC) + " speed")
         
 def derivative(new, last, thisTime, lastTime):
     dt = thisTime - lastTime
