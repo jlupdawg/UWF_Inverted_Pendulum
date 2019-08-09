@@ -1,14 +1,40 @@
+import sys
+sys.path.append('/home/nano-pendulum/.local/lib/python3.6/site-packages/')
+
+import busio
+
+import time
+import board
 import time
 
-PWMLimit = 255
+from adafruit_pca9685 import PCA9685
 
-def forward(speed):
-    #Code to make the motors go foward PWM and GPIO
-    print("Forward at " + str(speed) + " speed")
+print("Initializing PWM")
+i2c_bus0=(busio.I2C(board.SCL_1, board.SDA_1))
 
-def backward(speed):
-    #Code to make the motors go foward PWM and GPIO
-    print("Backward at " + str(speed) + " speed")
+pca = PCA9685(i2c_bus0)
+pca.frequency = 50
+PWMLimit = 100
+
+def forward(DC):
+    DC = int((DC) * (65534) / (100))
+    pca.channels[1].duty_cycle = 0  #direction to forward
+    DC = int(hex(DC),16)  #make DC into HEX for the library
+    try:
+        pca.channels[0].duty_cycle = DC
+    except:
+        pca.channels[0].duty_cycle = 0
+    print("Forward at " + str(DC) + " speed")
+
+def backward(DC):
+    DC = int((DC) * (65534) / (100))
+    pca.channels[1].duty_cycle = 1  #direction to backward
+    DC = int(hex(DC),16)  #make DC into HEX for the library
+    try:
+        pca.channels[0].duty_cycle = DC
+    except:
+        pca.channels[0].duty_cycle = 0
+    print("Backward at " + str(DC) + " speed")
         
 def derivative(new, last, thisTime, lastTime):
     dt = thisTime - lastTime
