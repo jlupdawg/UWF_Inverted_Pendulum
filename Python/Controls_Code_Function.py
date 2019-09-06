@@ -17,6 +17,7 @@ pca.frequency = 50
 PWMLimit = 100
 
 def forward(DC):
+    print("Forward at " + str(DC) + " speed")
     DC = int((DC) * (65534) / (100))
     pca.channels[1].duty_cycle = 0  #direction to forward
     DC = int(hex(DC),16)  #make DC into HEX for the library
@@ -24,18 +25,18 @@ def forward(DC):
         pca.channels[0].duty_cycle = DC
     except:
         pca.channels[0].duty_cycle = 0
-    print("Forward at " + str(DC) + " speed")
+    
 
 def backward(DC):
+    print("Backward at " + str(DC) + " speed")
     DC = int((DC) * (65534) / (100))
-    pca.channels[1].duty_cycle = 1  #direction to backward
+    pca.channels[1].duty_cycle = 0xFFFE #direction to backward
     DC = int(hex(DC),16)  #make DC into HEX for the library
     try:
         pca.channels[0].duty_cycle = DC
     except:
         pca.channels[0].duty_cycle = 0
-    print("Backward at " + str(DC) + " speed")
-        
+
 def derivative(new, last, thisTime, lastTime):
     dt = thisTime - lastTime
     #print ("DT = " + str(dt))
@@ -49,7 +50,8 @@ def PID(angle, Kp = 50, Kd = 0, highAngle = 30, setPoint = 0, lastTime = 0, oldA
     #print ("This Time = " + str(thisTime))
     derive = derivative(angle, oldAngle,thisTime, lastTime)
     lastTime = thisTime
-
+    print("Kp : " + str(Kp) + "	Angle : " + str(angle-setPoint))
+    print("Kd : " + str(Kd) + "	Derivative : " + str(derive))
     PD = Kp*(angle-setPoint) + Kd*derive
     if(PD < 0):
         PD = max(-PWMLimit, PD)
