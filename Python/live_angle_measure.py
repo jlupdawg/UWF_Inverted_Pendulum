@@ -6,7 +6,7 @@ import Controls_Code_Function as Control
 import time
 
 #Change output back to 1280x600
-def gstreamer_pipeline (capture_width=1280, capture_height=720, display_width=800, display_height=400, framerate=60, flip_method=0) :   
+def gstreamer_pipeline (capture_width=1280, capture_height=720, display_width=1280, display_height=600, framerate=60, flip_method=0) :   
     return ('nvarguscamerasrc ! ' 
     'video/x-raw(memory:NVMM), '
     'width=(int)%d, height=(int)%d, '
@@ -44,8 +44,8 @@ class Target:
         setPoint = 0
         highAngle = 30
         oldAngle = 0
-        Kp = 20
-        Kd = .5
+        Kp = 15   ##11   11
+        Kd = 1.25 ##.2   1.25
         derivative = 0
 
         time.sleep(3)
@@ -76,8 +76,8 @@ class Target:
             threshold_img1 = cv.erode(threshold_img1, red_kernel, iterations=5) 
             threshold_img1 = cv.dilate(threshold_img1, red_kernel, iterations=5) 
 
-            cv.imshow("Reds",threshold_img1)
-            cv.imshow("Blues",threshold_img2)
+            #cv.imshow("Reds",threshold_img1)
+            #cv.imshow("Blues",threshold_img2)
 	   
 	    #determine the moments of the two objects
             moments1=cv.moments(threshold_img1)
@@ -129,7 +129,7 @@ class Target:
                 angle = map(angle, -90, 0, 0, -90)
             
             #Make call to controls
-            '''
+            
             if(status == 1):
 		#print ("Last Time = " + str(lastTime))
                 status, oldAngle , lastTime, derivative = Control.PID(angle, Kp, Kd, highAngle, setPoint, lastTime, oldAngle, status)	
@@ -138,13 +138,15 @@ class Target:
                 #print("Time = " + str(lastTime))
             else:
                 Control.PID(0)
+                time.sleep(15)
+                t.run()	
                 break
-            '''
+            
 	    #this is our angle text
             cv.putText(img,str(angle),(int(x1)+50,int(int(y2)+int(y1)/2)),font, 4,(255,255,255))
 
             #display frames to users
-            cv.imshow("Target",img)
+            #cv.imshow("Target",img)
 
             # Listen for ESC or ENTER key
             c = cv.waitKey(7) % 0x100
