@@ -53,6 +53,7 @@ def PID(angle, Kp = 50, Kd = 0, highAngle = 30, setPoint = 0, lastTime = 0, oldA
     print("Kp : " + str(Kp) + "	Angle : " + str(angle-setPoint))
     print("Kd : " + str(Kd) + "	Derivative : " + str(derive))
     PD = Kp*(angle-setPoint) + Kd*derive
+    PDorg = PD
     if(PD < 0):
         PD = max(-PWMLimit, PD)
         PD = -PD
@@ -64,5 +65,10 @@ def PID(angle, Kp = 50, Kd = 0, highAngle = 30, setPoint = 0, lastTime = 0, oldA
     if(angle > highAngle or angle < -highAngle):
         stat = 0
     oldAngle = angle
+
+    if(PDorg > 100):
+        PDorg = 100
+    elif(PDorg < -100):
+        PDorg = -100
         
-    return stat, oldAngle, lastTime, derive
+    return stat, oldAngle, lastTime, derive, PDorg

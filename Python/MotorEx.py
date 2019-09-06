@@ -10,7 +10,7 @@ i2c_bus0=(busio.I2C(board.SCL_1, board.SDA_1))
 pca = PCA9685(i2c_bus0)
 pca.frequency = 50
 
-percent = 100
+percent = 50
 
 while 1:
     DC = int((percent) * (65534) / (100))
@@ -26,6 +26,6 @@ while 1:
     except:
         pca.channels[0].duty_cycle = 0
         continue
-    time.sleep(.5)
+    time.sleep(1)
     percent = -percent
 
