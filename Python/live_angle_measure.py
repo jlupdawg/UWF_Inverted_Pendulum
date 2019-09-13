@@ -5,7 +5,6 @@ import numpy as np
 import Controls_Code_Function as Control
 import time
 
-#Change output back to 1280x600
 def gstreamer_pipeline (capture_width=1280, capture_height=720, display_width=1280, display_height=600, framerate=60, flip_method=0) :   
     return ('nvarguscamerasrc ! ' 
     'video/x-raw(memory:NVMM), '
@@ -14,7 +13,7 @@ def gstreamer_pipeline (capture_width=1280, capture_height=720, display_width=12
     'nvvidconv flip-method=%d ! '
     'video/x-raw, width=(int)%d, height=(int)%d, format=(string)BGRx ! '
     'videoconvert ! '
-    'video/x-raw, format=(string)BGR ! appsink'  % (capture_width,capture_height,framerate,flip_method,display_width,display_height))
+    'video/x-raw, format=(string)BGR ! appsink'  % (capture_width,capture_height,framerate,flip_method,display_width,display_height))  #path and settings to setup the camera
 
 def map(x,in_min,in_max,out_min,out_max):
     return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
@@ -22,7 +21,7 @@ def map(x,in_min,in_max,out_min,out_max):
 class Target:
 
     def __init__(self):
-        self.capture = cv.VideoCapture(gstreamer_pipeline(flip_method=0), cv.CAP_GSTREAMER)
+        self.capture = cv.VideoCapture(gstreamer_pipeline(flip_method=0), cv.CAP_GSTREAMER) #connect to the camera
 
     def run(self):
         #initiate font
@@ -38,7 +37,9 @@ class Target:
         threshold_img2 = np.zeros((frame_height, frame_width, 1), dtype=np.uint8)
         threshold_img2b = np.zeros((frame_height, frame_width, 1), dtype=np.uint8)
         i=0
- 
+ 	
+	##################################################### Change these values #############################################
+
         status = 1
         lastTime = int(round(time.time() * 1000))
         setPoint = 0
@@ -47,6 +48,8 @@ class Target:
         Kp = 15   ##11   11
         Kd = 1.25 ##.2   1.25
         derivative = 0
+	
+	######################################################################################################################	
 
         time.sleep(3)
 
@@ -91,7 +94,7 @@ class Target:
             for x in coord_list:
                 x=0
              
-            #there can be noise in the video so ignore objects with small areas
+            #Ignore if the image was over-filtered (the area is too small)
             if (area1 >10000):
                 #x and y coordinates of the center of the object is found by dividing the 1,0 and 0,1 moments by the area
                 x1=int(moments1['m10']/area1)
@@ -110,20 +113,21 @@ class Target:
  
 		#draw line measure angle
                 cv.line(img,(x1,y1),(x2,y2),(0,255,0),4,cv.LINE_AA)
+
             x1=float(x1)
             y1=float(y1)
             x2=float(x2)
             y2=float(y2)
 
             try:
-            	angle = float(math.atan((y1-y2)/(x2-x1))*180/math.pi)
+            	angle = float(math.atan((y1-y2)/(x2-x1))*180/math.pi)  #fails if the rod is perfectly verticle
             except:
                 angle = 0
                 continue
 
             angle = round(angle, 2)
 
-            if angle > 0:
+            if angle > 0: #Make the angle show relative to the y-axis
                 angle = map(angle, 90, 0, 0, 90)
             elif angle < 0:
                 angle = map(angle, -90, 0, 0, -90)
@@ -139,7 +143,7 @@ class Target:
             else:
                 Control.PID(0)
                 time.sleep(15)
-                t.run()	
+                t.run()	#Runs the code again to check if the rod is back in place
                 break
             
 	    #this is our angle text

@@ -1,0 +1,18 @@
+Install VNCViewer by RealVNC (https://www.realvnc.com/en/)
+Set your ethernet connection to match the nanos IP Address (for Windows 10):
+	Start -> "Network & Internet" -> "Change Adapert Options"
+	Double click "Ethernet" -> "Properties"
+	Double click "Internet Protocol Version 4"
+	Select "Use the following IP Address"
+	IP Address: xxx.yyy.zzz.1 (xxx.yyy.zzz to match nano)
+	Subnet Mask: 255.255.255.0
+	Optional : Match DNS Servers with the nano
+Link your computer the the Nano using an ethernet cable. 
+Open VNCViewer and connect to xxx.yyy.zzz.QQQ (matching nano IP)
+
+Note: The resolution will probably be very small. The effort to try and change it probably isn't worth the time
+For long periods of work I suggest using one of the projectors in a classroom.
+
+	
+
+	
