@@ -11,8 +11,11 @@ pca = PCA9685(i2c_bus0)
 pca.frequency = 50
 
 percent = 100
+initialize_encoder()
 
-while 1:
+start_time = time()
+
+while time() - start_time < 2:
     DC = int((percent) * (65534) / (100))
     if DC < 0:
         DC = -DC
@@ -26,6 +29,6 @@ while 1:
     except:
         pca.channels[0].duty_cycle = 0
         continue
-    time.sleep(.5)
     percent = -percent
+    log_encoder()
 
