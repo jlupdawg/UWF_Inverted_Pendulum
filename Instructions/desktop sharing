@@ -1,0 +1,23 @@
+To fix the desktop sharing issues for Ubunutu...
+
+-1) Edit the org.gnome.Vino schema to restore the missing "enabled" parameter (copying from 16.04)
+
+sudo nano /usr/share/glib-2.0/schemas/org.gnome.Vino.gschema.xml
+
+Add this key:
+    <key name='enabled' type='b'>
+      <summary>Enable remote access to the desktop</summary>
+      <description>
+        If true, allows remote access to the desktop via the RFB
+        protocol. Users on remote machines may then connect to the
+        desktop using a VNC viewer.
+      </description>
+      <default>false</default>
+    </key>
+
+-2) Compile the schemas for Gnome:
+
+sudo glib-compile-schemas /usr/share/glib-2.0/schemas
+-3)
+Then follow these instructions if necessary
+https://blog.hackster.io/getting-started-with-the-nvidia-jetson-nano-developer-kit-43aa7c298797

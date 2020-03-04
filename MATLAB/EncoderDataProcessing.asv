@@ -1,0 +1,32 @@
+%{
+Script for Processing Inverted Pendulum Encoder Data
+%}
+
+%%Variables
+wheelRadius = 2 * 25.4; %Wheel radius in mm
+
+%%Read data
+fid = fopen("../Data/EncoderData.txt",'rt');
+data = textscan(fopen, '%f');
+
+angle = data(1:2:end,:);
+time = data(2:2:end,:);
+
+position = wheelRadius * angle;
+    
+%%Plot data
+figure 1:
+plot(time,position);
+title('Cart position vs time');
+xlabel('Time (s)');
+ylabel('Position(m)');
+
+acceleration = zeroes(size(position),1);
+velocity = zeroes(size(position),1);
+
+%%Second order derivative calculations
+for i=1:1:size(position)-1
+    acceleration(i) = (position(i+1) - 2*position(i) + position(i-1)) / ((time(i+1) - time(i)) * (time(i) - time (i-1)));
+    
+end
+    

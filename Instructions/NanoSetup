@@ -7,7 +7,19 @@ pip3 install -U numpy
 
 follow this tutorial to install servokit/busio/board @ https://www.youtube.com/watch?v=RnGUTny1hG8
 
+Set the Machines IP Address to a static value:
+	Click the internet connections button
+	Edit Connections
+	Double Click Ethernet Connection
+	IPv4 settings
+	Add "Address : xxx.yyy.zzz.QQQ Netmask : 255.255.255.0"
+
+Copy the code from github manually by using the 'git clone' command or add it using a flashdrive
+
+The main function is UWFInvertedPendulum/Python/liveAngleMeasurement.py 
+***It must be run with Python3
+
 Notes:
-Using nomachine client to remotely access the nano via ethernet
-	For nomachine to work properly, you will need to follow the creating a virtual monitor tutorial
-Download UWF_Inverted_Pendulum repo @ https://github.com/jlupdawg/UWF_Inverted_Pendulum.git
+Using VNCServer to share the desktop...See 'Desktop Sharing' Instructions
+After making a static IP Address you will lose connection to the UWF Internet. They do not allow static IPs (but it is still safe)
+
