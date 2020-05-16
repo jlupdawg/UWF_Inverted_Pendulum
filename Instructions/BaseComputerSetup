@@ -9,7 +9,7 @@ Set your ethernet connection to match the nanos IP Address (for Windows 10):
 	Optional : Match DNS Servers with the nano
 Link your computer the the Nano using an ethernet cable. 
 Open VNCViewer and connect to xxx.yyy.zzz.QQQ (matching nano IP) (Currently: 172.20.4.200)
-Password: 
+Password: nvidia
 
 Note: The resolution will probably be very small. The effort to try and change it probably isn't worth the time
 For long periods of work I suggest using one of the projectors in a classroom.
