@@ -1,3 +1,6 @@
+#Similar to MotorEx except it reads all Serial data after the motors have stopped
+#Must be used with ThroughShaftEncoder2 Arduino sketch
+
 import busio
 import board
 import time
@@ -5,16 +8,23 @@ import encoderTest as coder
 
 from adafruit_pca9685 import PCA9685
 
+#Initialize PWM and Motor Setup
 print("Initializing PWM")
 i2c_bus0=(busio.I2C(board.SCL_1, board.SDA_1))
 
 pca = PCA9685(i2c_bus0)
-pca.frequency = 50
+pca.frequency = 1600
 
-percent = 25
+percent = 30
+
+#Initialize Port
+coder.initialize_port()
+time.sleep(3)
+
+#Tell the Arduino to start recording encoder data
 coder.initialize_encoder()
-time.sleep(5)
 
+#Set motor to desired PWM signal
 DC = int((percent) * (65534) / (100))
 if DC < 0:
     DC = -DC
@@ -32,8 +42,15 @@ except:
 
 start_time = int(round(time.time() * 1000))
 
+#Wait 2 seconds
 while int(round(time.time() * 1000)) - start_time < 2000:
-    time.sleep(.0001)
-    coder.log_encoder(start_time)
+    pass
 
+#Turn off motors, wait, and stop reading encoder data
 pca.channels[0].duty_cycle = 0
+time.sleep(0.5)
+coder.close_encoder()
+
+#Receive all serial code to data
+coder.read_data()
+coder.close_port()

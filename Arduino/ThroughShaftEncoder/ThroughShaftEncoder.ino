@@ -1,6 +1,6 @@
 #include <SoftwareSerial.h>
 
-SoftwareSerial mySerial(2, 3); // RX, TX
+//SoftwareSerial mySerial(2, 3); // RX, TX
 
 const int EncoderSignal = A0;
 const int maxAnalog = 1023;
@@ -11,7 +11,7 @@ double lastReading = 0;
 double currAngle = 0.0;
 double delta = 0;
 
-int angleTolerance = 30;
+int angleTolerance = 60;
 
 void setup() {
   pinMode(EncoderSignal, INPUT);
@@ -30,14 +30,16 @@ void loop() {
   if (delta < -angleTolerance) {
     delta = delta + 360;
     }
-  else if (delta > angleTolerance) {
+  /*else if (delta > angleTolerance) {
     delta = delta - 360;
-    }
+    }*/ //With current config, number should always be increasing.
 
   currAngle += delta;  
   toJetson(currAngle);
-  
-  Serial.println(currAngle);
+
+  //Serial.write('a');
+  //Serial.println(currAngle);
+  //Serial.println('d',currAngle);
   lastReading = currReading;
 }
 
@@ -46,8 +48,8 @@ double GetAngle(){
 }
 
 void toJetson(int angle){
-    if (mySerial.available())
-      Serial.write(angle);
+  Serial.print('d');
+  Serial.println(angle);
 }
 
 int initAngle(){
