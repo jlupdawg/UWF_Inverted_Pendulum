@@ -7,7 +7,7 @@ const int maxAnalog = 1023;
 const int BAUD_RATE = 9600;
 
 const int numReadings = 200;
-const int timeBtwnReadings = 1;
+const int timeBtwnReadings = 50;
 
 double currReading = 0;
 double lastReading = 0;
@@ -22,7 +22,7 @@ byte command = 'a';
 int angleTolerance = 60;
 
 double encoderData[numReadings];
-int timeData[numReadings];
+unsigned int timeData[numReadings];
 unsigned long startTime = 0;
 int index=0;
 
@@ -87,15 +87,15 @@ void encoderLoop() {
   //Serial.println('d',currAngle);
   lastReading = currReading;
 
-  if ((currAngle - encoderData[index-1])>0.5 && timeData[index-1]+timeBtwnReadings <= (int)millis()-startTime){
+  if ((currAngle - encoderData[index-1])>0.5 && timeData[index-1]+timeBtwnReadings/10 <= (int)((micros()-startTime)/10)){
     encoderData[index] = currAngle;
-    timeData[index] = (int)(millis() - startTime);
+    timeData[index] = (int)((micros() - startTime)/10);
     index++;
     }
 
-  /*else if ((currAngle - encoderData[index-1]) && timeData[index-1] <= (int)millis() && index<150){
+  /*else if ((currAngle - encoderData[index-1]) && timeData[index-1] <= (int)micros() && index<150){
     encoderData[index] = currAngle;
-    timeData[index] = millis();
+    timeData[index] = micros();
     index++;
     }*/
 
@@ -109,8 +109,8 @@ void toJetson(){
   //Serial.println("To Jetson");
   for(int i=0; i<numReadings; i++){
     if (Serial.availableForWrite()){
-      Serial.print(timeData[i] - startTime); 
-      Serial.print(", ");
+      Serial.print(timeData[i]); 
+      Serial.print("0, ");
       Serial.println(encoderData[i]);
       timeData[i] = 0;
       encoderData[i] = 0;
@@ -135,7 +135,7 @@ int initAngle(){
   Serial.println(lastReading);
   Serial.println("");
   currAngle = 0;
-  startTime = millis();
+  startTime = micros();
 
   timeData[0] = 0;
   encoderData[0] = 0;
