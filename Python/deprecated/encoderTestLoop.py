@@ -8,7 +8,7 @@ import busio
 import board
 import time
 import Jetson.GPIO as GPIO
-from adafruit_pca9685 import PCA9685
+from Adafruit_PCA9685 import PCA9685
 
 #Constants
 PWM_DUTY_CYCLE = 80

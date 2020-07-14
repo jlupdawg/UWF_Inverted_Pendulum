@@ -18,7 +18,7 @@ import time
 
 
 #Variables
-MOTOR_PERCENT = 80
+MOTOR_PERCENT = 100
 PWM_FREQ = 1600
 MAX_TIME = 2 #(in seconds)
 MAX_VOLTAGE = 3.3
