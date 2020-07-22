@@ -1,7 +1,8 @@
 const byte chanB = 3;
 const byte chanA = 2;
 volatile byte state = LOW;
-unsigned long num = 0;
+long num = 0;
+char cmd = 'x';
 
 void setup() {
   pinMode(chanB, INPUT);
@@ -11,7 +12,14 @@ void setup() {
 }
 
 void loop() {
-  if (Serial.available() > 0 && Serial.read() == 'r'){
+  cmd = 'x';
+  if (Serial.available()){
+    cmd = Serial.read();
+    }
+  if (cmd == 's'){ //Set
+    num = 0;
+  }
+  else if (cmd == 'r'){ //Read
     Serial.println(num);
   }
 }

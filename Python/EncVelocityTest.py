@@ -16,7 +16,8 @@ direc = 1 #1 for forward, -1 for backward
 pos = 0
 
 #Motor speed %
-percent = 30
+percent = 75
+max_dist = 8000
 
 #Serial communications
 serial_port = serial.Serial()
@@ -26,7 +27,7 @@ serial_port = serial.Serial()
 	pos += direc'''
 
 def main():
-	global CHAN_A, CHAN_B, percent, pos, serial_port
+	global CHAN_A, CHAN_B, percent, pos, serial_port, max_dist
 	# Pin/Encoder Setup:
 	GPIO.cleanup()
 	GPIO.setmode(GPIO.BOARD)  # BOARD pin-numbering scheme
@@ -43,6 +44,8 @@ def main():
 		)
     	# Wait a second to let the port initialize
 	time.sleep(1)
+	serial_port.write('s'.encode())
+	pos = 0
 
 	#Data logging
 	file1 = open("encoderData.txt","a")
@@ -80,13 +83,15 @@ def main():
 
 	#Encoder reading
 	try:
-		#Read and log encoder for 4 seconds
+		#Read and log encoder for n seconds
 		prev_micros = curr_micros = 0.0
 		prev_pos = 0
-		while int(round(time.time() * 1000)) - start_time < 3000:
+		#while int(round(time.time() * 1000)) - start_time < 2000:
+		while int(pos) < max_dist:
 			curr_micros = datetime.now().second * 1000000 + datetime.now().microsecond
 			if curr_micros != prev_micros:
 				serial_port.write('r'.encode())
+				print("Sending r")
 				while serial_port.inWaiting() == 0:
 					pass
 				pos = serial_port.readline().decode('utf-8')
