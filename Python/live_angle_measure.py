@@ -5,6 +5,12 @@ import numpy as np
 import Controls_Code_Function as Control
 import time
 
+<<<<<<< HEAD
+f = open('output.txt', 'w')
+
+#Change output back to 1280x600
+=======
+>>>>>>> e226ccaa5ca85fe07d3d359388ba10fcc88f7c0b
 def gstreamer_pipeline (capture_width=1280, capture_height=720, display_width=1280, display_height=600, framerate=60, flip_method=0) :   
     return ('nvarguscamerasrc ! ' 
     'video/x-raw(memory:NVMM), '
@@ -42,10 +48,11 @@ class Target:
 
         status = 1
         lastTime = int(round(time.time() * 1000))
+        startTime = lastTime
         setPoint = 0
         highAngle = 30
         oldAngle = 0
-        Kp = 15   ##11   11
+        Kp = 11   ##11   11
         Kd = 1.25 ##.2   1.25
         derivative = 0
 	
@@ -136,10 +143,11 @@ class Target:
             
             if(status == 1):
 		#print ("Last Time = " + str(lastTime))
-                status, oldAngle , lastTime, derivative = Control.PID(angle, Kp, Kd, highAngle, setPoint, lastTime, oldAngle, status)	
+                status, oldAngle , lastTime, derivative, PD = Control.PID(angle, Kp, Kd, highAngle, setPoint, lastTime, oldAngle, status)	
                 #print("Angle = " + str(angle))
 		#print("Derivative = " + str(derivative))
                 #print("Time = " + str(lastTime))
+                f.write("%i %2.2f %2.1f \n" % ((lastTime-startTime), angle, PD))
             else:
                 Control.PID(0)
                 time.sleep(15)
@@ -157,6 +165,7 @@ class Target:
             if c == 27 or c == 10:
                 break
         cv.destroyAllWindows()
+        f.close()
              
 if __name__=="__main__":
     t = Target()

@@ -47,11 +47,20 @@ def derivative(new, last, thisTime, lastTime): #Find the derivative of theta
 def PID(angle, Kp = 50, Kd = 0, highAngle = 30, setPoint = 0, lastTime = 0, oldAngle = 0, stat = 0):
     thisTime = int(round(time.time() * 1000)) #get the current time
     #print ("This Time = " + str(thisTime))
+<<<<<<< HEAD
+    derive = derivative(angle, oldAngle,thisTime, lastTime)
+    lastTime = thisTime
+    print("Kp : " + str(Kp) + "	Angle : " + str(angle-setPoint))
+    print("Kd : " + str(Kd) + "	Derivative : " + str(derive))
+    PD = Kp*(angle-setPoint) + Kd*derive
+    PDorg = PD
+=======
     derive = derivative(angle, oldAngle,thisTime, lastTime) #find the derivative
     lastTime = thisTime #set the time for the next derivative
     print("Kp : " + str(Kp) + "	Angle : " + str(angle-setPoint)) #For data analysis
     print("Kd : " + str(Kd) + "	Derivative : " + str(derive)) #For data analysis
     PD = Kp*(angle-setPoint) + Kd*derive #PD = Kp*Theta + Kd*Theta dot
+>>>>>>> e226ccaa5ca85fe07d3d359388ba10fcc88f7c0b
     if(PD < 0):
         PD = max(-PWMLimit, PD)
         PD = -PD
@@ -61,7 +70,19 @@ def PID(angle, Kp = 50, Kd = 0, highAngle = 30, setPoint = 0, lastTime = 0, oldA
         forward(PD)
 
     if(angle > highAngle or angle < -highAngle):
+<<<<<<< HEAD
+        stat = 0
+    oldAngle = angle
+
+    if(PDorg > 100):
+        PDorg = 100
+    elif(PDorg < -100):
+        PDorg = -100
+        
+    return stat, oldAngle, lastTime, derive, PDorg
+=======
         stat = 0  #Stops the car if the angle is too large
     oldAngle = angle #Record this for the deriative
         
     return stat, oldAngle, lastTime, derive #Return important data
+>>>>>>> e226ccaa5ca85fe07d3d359388ba10fcc88f7c0b
