@@ -71,7 +71,7 @@ def LQR(theta, x, K=[1,1,1,1], set_pt_theta = 0, set_pt_x = 0, stat = 0):
     prev_x = x
 
     states = [(x-set_pt_x), x_dot, theta, theta_dot]
-    duty_cycle = sum([states[i]*k[i] for i in len(k)])
+    duty_cycle = sum([states[i]*k[i] for i in range(len(k))])
 
     if duty_cycle > 0:
         forward(duty_cycle + pwm_offset)
