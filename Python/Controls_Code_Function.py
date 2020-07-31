@@ -55,12 +55,14 @@ def derivative(new, last, thisTime, lastTime): #Find the derivative of theta
     return derive
 
 def LQR(theta, x, K=[1,1,1,1], set_pt_theta = 0, set_pt_x = 0, stat = 0):
-    global curr_time, prev_time, max_theta, pwm_offset
+    global curr_time, prev_time, prev_x, prev_theta, max_theta, pwm_offset
 
     if (theta > max_theta or theta < -max_theta):
         forward(0)
         stat = 0
-        return
+        return -1,-2
+
+    theta *= 3.1415926/180
 
     curr_time = int(round(time.time() * 1000))  # get the current time
     theta_dot = derivative(theta, prev_theta, curr_time, prev_time)
@@ -71,14 +73,15 @@ def LQR(theta, x, K=[1,1,1,1], set_pt_theta = 0, set_pt_x = 0, stat = 0):
     prev_x = x
 
     states = [(x-set_pt_x), x_dot, theta, theta_dot]
-    duty_cycle = sum([states[i]*k[i] for i in range(len(k))])
+    print(states, curr_time)
+    duty_cycle = sum([states[i]*K[i] for i in range(len(K))])
 
     if duty_cycle > 0:
         forward(duty_cycle + pwm_offset)
     else:
         backward(-duty_cycle + pwm_offset)
 
-    return stat
+    return stat, duty_cycle
 
 def PID(angle, Kp = 50, Kd = 0, highAngle = 30, setPoint = 0, lastTime = 0, oldAngle = 0, stat = 0):
     thisTime = int(round(time.time() * 1000)) #get the current time

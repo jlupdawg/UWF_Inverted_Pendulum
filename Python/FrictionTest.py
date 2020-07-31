@@ -16,8 +16,8 @@ direc = 1 #1 for forward, -1 for backward
 pos = 0
 
 #Motor speed %
-percent = 40
-max_dist = 8000
+percent = 55
+max_dist = 2400
 
 #Serial communications
 serial_port = serial.Serial()
@@ -48,9 +48,9 @@ def main():
 	pos = 0
 
 	#Data logging
-	file1 = open("encoderData.txt","a")
+	file1 = open("FrictionData.txt","a")
 	file1.write("\n---------------------\n")
-	file1.write("Encoder velocity testing.\n")
+	file1.write("Friction testing.\n")
 	file1.write(str(percent) + "%")
 	file1.write("\n---------------------\n")
 
@@ -86,8 +86,7 @@ def main():
 		#Read and log encoder for n seconds
 		prev_micros = curr_micros = 0.0
 		prev_pos = 0
-		#while int(round(time.time() * 1000)) - start_time < 2000:
-		while int(pos) < max_dist:
+		while int(round(time.time() * 1000)) - start_time < 5000:
 			curr_micros = datetime.now().second * 1000000 + datetime.now().microsecond
 			if curr_micros != prev_micros:
 				serial_port.write('r'.encode())
@@ -102,6 +101,8 @@ def main():
 					file1.write(str(curr_micros) + " ")
 					file1.write(str(pos))
 					file1.write("")
+			if int(pos) >= max_dist:
+				pca.channels[0].duty_cycle = 0
 			
 	finally:
 		#Cleanup
