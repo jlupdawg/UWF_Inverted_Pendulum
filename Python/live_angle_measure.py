@@ -4,12 +4,10 @@ import numpy as np
  
 import Controls_Code_Function as Control
 import time
-import serial
 
 f = open('output.txt', 'w')
 
 #Change output back to 1280x600
-
 def gstreamer_pipeline (capture_width=1280, capture_height=720, display_width=1280, display_height=600, framerate=60, flip_method=0) :   
     return ('nvarguscamerasrc ! ' 
     'video/x-raw(memory:NVMM), '
@@ -20,30 +18,15 @@ def gstreamer_pipeline (capture_width=1280, capture_height=720, display_width=12
     'videoconvert ! '
     'video/x-raw, format=(string)BGR ! appsink'  % (capture_width,capture_height,framerate,flip_method,display_width,display_height))  #path and settings to setup the camera
 
-#Serial port communication initialization
-serial_port = serial.Serial(
-	port='/dev/ttyUSB0', #CHANGE ME IF NEEDED
-	baudrate=115200,
-	bytesize=serial.EIGHTBITS,
-	parity=serial.PARITY_NONE,
-	stopbits=serial.STOPBITS_ONE,
-	)
-# Wait a second to let the port initialize
-time.sleep(1)
-serial_port.write('s'.encode())
-pos = prev_pos = 0
-
-#LQR Vector
-K = [-10.0000, -29.9836, 822.2578, 85.5362]
-
 def map(x,in_min,in_max,out_min,out_max):
     return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
 
 class Target:
 
     def __init__(self):
+        print("Camera initializing!")
         self.capture = cv.VideoCapture(gstreamer_pipeline(flip_method=0), cv.CAP_GSTREAMER) #connect to the camera
-        print("Camera connected!")
+        print("Camera initialized!")
 
     def run(self):
         #initiate font
@@ -141,11 +124,11 @@ class Target:
             y1=float(y1)
             x2=float(x2)
             y2=float(y2)
+            print("x,y1,x2,y2: ", x1, y1, x2, y2)
 
             try:
-            	angle = float(math.atan((y1-y2)/(x2-x1))*180/math.pi)  #fails if the rod is perfectly vertical
+            	angle = float(math.atan((y1-y2)/(x2-x1))*180/math.pi)  #fails if the rod is perfectly verticle
             except:
-                print("Entered angle except.")
                 angle = 0
                 continue
 
@@ -155,30 +138,20 @@ class Target:
                 angle = map(angle, 90, 0, 0, 90)
             elif angle < 0:
                 angle = map(angle, -90, 0, 0, -90)
-
-            #Read position from arduino
-            serial_port.write('r'.encode())
-            while serial_port.inWaiting() == 0:
-                print("Waiting on serial.")
-                pass
-            pos = int(serial_port.readline().decode('utf-8')) / 1000 * 2 * 3.141592 * 0.05
-            print("Read pos: ", pos)
-
             
             #Make call to controls
             
-            if(True or status == 1):
+            if(status == 1):
 		#print ("Last Time = " + str(lastTime))
-                #status, oldAngle , lastTime, derivative, PD = Control.PID(angle, Kp, Kd, highAngle, setPoint, lastTime, oldAngle, status)
-		
-                status, duty_cycle = Control.LQR(angle, pos, K, set_pt_theta = 0, set_pt_x = 0, stat = 1)
+                status, oldAngle , lastTime, derivative, PD = Control.PID(angle, Kp, Kd, highAngle, setPoint, lastTime, oldAngle, status)	
                 #print("Angle = " + str(angle))
 		#print("Derivative = " + str(derivative))
                 #print("Time = " + str(lastTime))
-                f.write("%i %2.2f %2.1f \n" % ((lastTime-startTime), angle, duty_cycle))
+                f.write("%i %2.2f %2.1f \n" % ((lastTime-startTime), angle, PD))
             else:
-                Control.LQR(0,0)
-                time.sleep(5)
+                print("Stat:", status)
+                Control.PID(0)
+                time.sleep(3)
                 t.run()	#Runs the code again to check if the rod is back in place
                 break
             
@@ -186,7 +159,7 @@ class Target:
             cv.putText(img,str(angle),(int(x1)+50,int(int(y2)+int(y1)/2)),font, 4,(255,255,255))
 
             #display frames to users
-            cv.imshow("Target",img)
+            #cv.imshow("Target",img)
 
             # Listen for ESC or ENTER key
             c = cv.waitKey(7) % 0x100
@@ -197,4 +170,7 @@ class Target:
              
 if __name__=="__main__":
     t = Target()
-    t.run()        
+    t.run()       
+    "Releasing capture."
+    self.capture.release() 
+

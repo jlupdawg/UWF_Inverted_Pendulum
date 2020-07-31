@@ -54,14 +54,13 @@ def derivative(new, last, thisTime, lastTime): #Find the derivative of theta
     derive = (new - last)/(float(dt)/1000)
     return derive
 
-def LQR(theta, x, K=[1,1,1,1], set_pt_theta = 0, set_pt_x = 0, stat = 0):
+def LQR(theta, x, K=[1,1,1,1], set_pt_theta = 0, set_pt_x = 0, stat = 1):
     global curr_time, prev_time, prev_x, prev_theta, max_theta, pwm_offset
 
     if (theta > max_theta or theta < -max_theta):
         forward(0)
-        stat = 0
-        return -1,-2
-
+        #stat = 0
+        return -1,-1
     theta *= 3.1415926/180
 
     curr_time = int(round(time.time() * 1000))  # get the current time
@@ -75,6 +74,7 @@ def LQR(theta, x, K=[1,1,1,1], set_pt_theta = 0, set_pt_x = 0, stat = 0):
     states = [(x-set_pt_x), x_dot, theta, theta_dot]
     print(states, curr_time)
     duty_cycle = sum([states[i]*K[i] for i in range(len(K))])
+    print("DC: ", duty_cycle)
 
     if duty_cycle > 0:
         forward(duty_cycle + pwm_offset)
@@ -83,20 +83,15 @@ def LQR(theta, x, K=[1,1,1,1], set_pt_theta = 0, set_pt_x = 0, stat = 0):
 
     return stat, duty_cycle
 
-def PID(angle, Kp = 50, Kd = 0, highAngle = 30, setPoint = 0, lastTime = 0, oldAngle = 0, stat = 0):
+def PID(angle, Kp = 50, Kd = 0, highAngle = 30, setPoint = 0, lastTime = 0, oldAngle = 0, stat = 1):
     thisTime = int(round(time.time() * 1000)) #get the current time
     #print ("This Time = " + str(thisTime))
-    derive = derivative(angle, oldAngle,thisTime, lastTime)
-    lastTime = thisTime
-    print("Kp : " + str(Kp) + "	Angle : " + str(angle-setPoint))
-    print("Kd : " + str(Kd) + "	Derivative : " + str(derive))
-    PD = Kp*(angle-setPoint) + Kd*derive
-    PDorg = PD
     derive = derivative(angle, oldAngle,thisTime, lastTime) #find the derivative
     lastTime = thisTime #set the time for the next derivative
     print("Kp : " + str(Kp) + "	Angle : " + str(angle-setPoint)) #For data analysis
     print("Kd : " + str(Kd) + "	Derivative : " + str(derive)) #For data analysis
     PD = Kp*(angle-setPoint) + Kd*derive #PD = Kp*Theta + Kd*Theta dot
+    PDorg = PD
     if(PD < 0):
         PD = max(-PWMLimit, PD)
         PD = -PD
