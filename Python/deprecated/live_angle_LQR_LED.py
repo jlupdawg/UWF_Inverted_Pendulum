@@ -5,17 +5,28 @@ import numpy as np
 import Controls_Code_Function as Control
 import time
 import serial
+import VideoGet
+
+import Jetson.GPIO as GPIO
+
+led_pin = 12
+GPIO.cleanup()
+GPIO.setmode(GPIO.BOARD)
+GPIO.setup(led_pin, GPIO.OUT)
+GPIO.output(led_pin, GPIO.LOW)
 
 f = open('output.txt', 'w')
+
+#Command for when camera stops working: sudo systemctl restart nvargus-daemon	
 
 #Change output back to 1280x600
 
 def gstreamer_pipeline (capture_width=1280, capture_height=720, display_width=1280, display_height=600, framerate=60, flip_method=0) :   
-    return ('nvarguscamerasrc ! ' 
-    'video/x-raw(memory:NVMM), '
-    'width=(int)%d, height=(int)%d, '
+    return ('nvarguscamerasrc ! ' #
+    'video/x-raw(memory:NVMM), '#
+    'width=(int)%d, height=(int)%d, '#
     'format=(string)NV12, framerate=(fraction)%d/1 ! '
-    'nvvidconv flip-method=%d ! '
+    'nvvidconv flip-method=%d ! '#
     'video/x-raw, width=(int)%d, height=(int)%d, format=(string)BGRx ! '
     'videoconvert ! '
     'video/x-raw, format=(string)BGR ! appsink'  % (capture_width,capture_height,framerate,flip_method,display_width,display_height))  #path and settings to setup the camera
@@ -42,15 +53,19 @@ def map(x,in_min,in_max,out_min,out_max):
 class Target:
 
     def __init__(self):
-        self.capture = cv.VideoCapture(gstreamer_pipeline(flip_method=0), cv.CAP_GSTREAMER) #connect to the camera
+        self.cam_thread = VideoGet.VideoGet(cv.VideoCapture(gstreamer_pipeline(flip_method=0), cv.CAP_GSTREAMER)) #connect to the camera
+
+        #self.cam_thread = VideoGet.VideoGet(cv.VideoCapture("nvarguscamerasrc ! nvvidconv ! xvimagesink ! appsink")) #connect to the camera
+
+        self.cam_thread.start()
         print("Camera connected!")
 
     def run(self):
         #initiate font
         font = cv.FONT_HERSHEY_SIMPLEX
         
-        frame_height = int(self.capture.get(cv.CAP_PROP_FRAME_HEIGHT))
-        frame_width = int(self.capture.get(cv.CAP_PROP_FRAME_WIDTH))
+        frame_height = int(self.cam_thread.get_stream().get(cv.CAP_PROP_FRAME_HEIGHT))
+        frame_width = int(self.cam_thread.get_stream().get(cv.CAP_PROP_FRAME_WIDTH))
         
         #instantiate images
         hsv_img = np.zeros((frame_height, frame_width, 3), dtype=np.uint8)
@@ -76,9 +91,12 @@ class Target:
 
         time.sleep(3)
 
-        while self.capture.isOpened():
+        while self.cam_thread.get_stream().isOpened():
             #capture the image from the cam
-            ret, img=self.capture.read()
+            if self.cam_thread.get_grabbed():
+            	ret_val, img = self.cam_thread.read();
+            else:
+                continue
  
             #convert the image to HSV
             hsv_img = cv.cvtColor(img, cv.COLOR_BGR2HSV)
@@ -156,6 +174,11 @@ class Target:
             elif angle < 0:
                 angle = map(angle, -90, 0, 0, -90)
 
+            if angle<0:
+                GPIO.output(led_pin, GPIO.HIGH)
+            else:
+                GPIO.output(led_pin, GPIO.LOW)
+
             #Read position from arduino
             serial_port.write('r'.encode())
             while serial_port.inWaiting() == 0:
@@ -175,22 +198,24 @@ class Target:
                 #print("Angle = " + str(angle))
 		#print("Derivative = " + str(derivative))
                 #print("Time = " + str(lastTime))
+                print("Loop time =", int(round(time.time() * 1000)) - lastTime)
+                lastTime = int(round(time.time() * 1000))
                 f.write("%i %2.2f %2.1f \n" % ((lastTime-startTime), angle, duty_cycle))
             else:
                 Control.LQR(0,0)
-                time.sleep(5)
+                time.sleep(6)
                 t.run()	#Runs the code again to check if the rod is back in place
                 break
-            
-	    #this is our angle text
-            cv.putText(img,str(angle),(int(x1)+50,int(int(y2)+int(y1)/2)),font, 4,(255,255,255))
-
-            #display frames to users
-            cv.imshow("Target",img)
+            if isinstance(img, np.ndarray):
+	        #this is our angle text
+                cv.putText(img,str(angle),(int(x1)+50,int(int(y2)+int(y1)/2)),font, 4,(255,255,255))
+                #display frames to users
+                cv.imshow("Target",img)
 
             # Listen for ESC or ENTER key
             c = cv.waitKey(7) % 0x100
             if c == 27 or c == 10:
+                self.cam_thread.stop()
                 break
         cv.destroyAllWindows()
         f.close()

@@ -1,6 +1,5 @@
 const byte chanB = 3;
 const byte chanA = 2;
-volatile byte state = LOW;
 long num = 0;
 char cmd = 'x';
 

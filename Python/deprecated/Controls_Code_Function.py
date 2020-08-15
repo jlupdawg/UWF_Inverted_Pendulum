@@ -18,8 +18,8 @@ PWMLimit = 100 # The maximum value for PWM is 100 to make conversions easy
 #Global Variable Initialization
 curr_time = prev_time = 0
 prev_x = prev_theta = 0
-max_theta = 30
-max_pwm = 85 #Max desired motor percent
+max_theta = 15
+max_pwm = 85# #UNCOMMENT ME #85 #Max desired motor percent
 pwm_offset = 16.67
 
 def forward(DC):
@@ -54,27 +54,35 @@ def derivative(new, last, thisTime, lastTime): #Find the derivative of theta
     derive = (new - last)/(float(dt)/1000)
     return derive
 
-def LQR(theta, x, K=[1,1,1,1], set_pt_theta = 0, set_pt_x = 0, stat = 1):
+def LQR(theta, x, K=[0,0,0,0], set_pt_theta = 0, set_pt_x = 0, stat = 1):
     global curr_time, prev_time, prev_x, prev_theta, max_theta, pwm_offset
+
+    #CAMERA SLIGHTLY OFF CENTER
+    theta += 3.75
 
     if (theta > max_theta or theta < -max_theta):
         forward(0)
-        #stat = 0
-        return -1,-1
+        stat = 0
+        return stat,-1
     theta *= 3.1415926/180
 
     curr_time = int(round(time.time() * 1000))  # get the current time
     theta_dot = derivative(theta, prev_theta, curr_time, prev_time)
     x_dot = derivative(x, prev_x, curr_time, prev_time)
 
+    pt = prev_time
+
     prev_time = curr_time
     prev_theta = theta
     prev_x = x
 
     states = [(x-set_pt_x), x_dot, theta, theta_dot]
-    print(states, curr_time)
-    duty_cycle = sum([states[i]*K[i] for i in range(len(K))])
+    for state in states:
+        print(state, "\n")
+    print("Time:", curr_time, "\n")
+    duty_cycle = sum([states[i]*K[i] for i in range(len(K))])# / 4
     print("DC: ", duty_cycle)
+    print("DELTA: ", curr_time - pt)
 
     if duty_cycle > 0:
         forward(duty_cycle + pwm_offset)
