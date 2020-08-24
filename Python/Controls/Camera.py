@@ -15,8 +15,8 @@ class Camera():
         #initiate font
         self.font = cv.FONT_HERSHEY_SIMPLEX
         
-        frame_height = int(self.cam_thread.get_stream().get(cv.CAP_PROP_FRAME_HEIGHT))
-        frame_width = int(self.cam_thread.get_stream().get(cv.CAP_PROP_FRAME_WIDTH))
+        frame_height = int(self.cam_thread.get_stream().get(cv.CAP_PROP_FRAME_HEIGHT)) - 110
+        frame_width = int(self.cam_thread.get_stream().get(cv.CAP_PROP_FRAME_WIDTH)) - 250
         
         #instantiate images
         self.hsv_img = np.zeros((frame_height, frame_width, 3), dtype=np.uint8)
@@ -47,6 +47,7 @@ class Camera():
             ret_val, img = self.cam_thread.read();
             if not ret_val:
                 continue
+            img = img[0:len(img)-110, 125:len(img[1])-125]
  
             #convert the image to HSV
             self.hsv_img = cv.cvtColor(img, cv.COLOR_BGR2HSV)
@@ -54,11 +55,11 @@ class Camera():
 	    #self.hsv_img = cv.GaussianBlur(self.hsv_img, (0, 0), 2)
  
             #threshold the image to isolate two colors
-            cv.inRange(self.hsv_img,(0,10,10),(10,255,255), self.threshold_img1) #red
-            cv.inRange(self.hsv_img,(160,100,100),(179,255,255), self.threshold_img1a)   #red again
+            cv.inRange(self.hsv_img,(0,150,10),(10,255,255), self.threshold_img1) #red
+            cv.inRange(self.hsv_img,(160,0,100),(179,255,255), self.threshold_img1a)   #red again
             cv.add(self.threshold_img1, self.threshold_img1a, self.threshold_img1)          #this is combining the two limits for red
 	    #cv.inRange(self.hsv_img,(36,25,25),(70,255,255), self.threshold_img2)  #Green
-            cv.inRange(self.hsv_img,(85,60,50),(135,255,255), self.threshold_img2)  #Blue
+            cv.inRange(self.hsv_img,(85,150,50),(135,255,255), self.threshold_img2)  #Blue
             
 	    #filter out noise
             blue_kernel = np.ones((5,5), np.uint8) 
