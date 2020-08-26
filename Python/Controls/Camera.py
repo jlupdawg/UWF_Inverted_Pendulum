@@ -6,7 +6,7 @@ import VideoGet
 import numpy as np
 
 class Camera():  
-    def __init__(self):
+    def __init__(self, display_camera_output = False):
         self.cam_thread = VideoGet.VideoGet(cv.VideoCapture(self.gstreamer_pipeline(flip_method=0), cv.CAP_GSTREAMER)) #connect to the camera
         #self.cam_thread = VideoGet.VideoGet(cv.VideoCapture("nvarguscamerasrc ! nvvidconv ! xvimagesink ! appsink")) #connect to the camera
         self.cam_thread.start()
@@ -24,6 +24,8 @@ class Camera():
         self.threshold_img1a = np.zeros((frame_height, frame_width, 1), dtype=np.uint8)
         self.threshold_img2 = np.zeros((frame_height, frame_width, 1), dtype=np.uint8)
         self.threshold_img2b = np.zeros((frame_height, frame_width, 1), dtype=np.uint8)
+
+        self.display_camera_output = display_camera_output
 
         time.sleep(3)
 
@@ -123,11 +125,12 @@ class Camera():
             elif angle < 0:
                 angle = self.map(angle, -90, 0, 0, -90)
 
-            if isinstance(img, np.ndarray):
-	        #this is our angle text
-                cv.putText(img,str(angle),(int(x1)+50,int(int(y2)+int(y1)/2)), self.font, 4,(255,255,255))
-                #display frames to users
-                cv.imshow("Target",img)
+            if self.display_camera_output:
+                if isinstance(img, np.ndarray):
+	            #this is our angle text
+                    cv.putText(img,str(angle),(int(x1)+50,int(int(y2)+int(y1)/2)), self.font, 4,(255,255,255))
+                    #display frames to users
+                    cv.imshow("Target",img)
 
             print("Angle:", angle)
             return angle
