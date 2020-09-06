@@ -8,8 +8,8 @@ import time
 import sys
 
 #CONTROLLER FLAGS
-#control_type = 'LQR'
-control_type = 'PID'
+control_type = 'LQR'
+#control_type = 'PID'
 #control_type = 'PD'
 #control_type = 'COMBINED_PID'
 
@@ -99,6 +99,7 @@ class Cart():
                 while (int(round(time.time() * 1000)) - sleep_t) < 6000:
                     self.angle = self.camera.get_angle()
                     break_flag = self.camera.check_for_break()
+                    if break_flag: break
                 self.status = 1
                 self.controller.reset()
                 continue
