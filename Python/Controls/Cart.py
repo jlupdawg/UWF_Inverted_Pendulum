@@ -43,7 +43,7 @@ pwm_offset = 16.67
 arduino_port = '/dev/ttyUSB0'
 
 #Booleans
-display_camera_output = True
+display_camera_output = False
 initialize_theta_set = True
 
 class Cart():
@@ -127,6 +127,7 @@ class Cart():
 
         self.camera.close()
         self.controller.close()
+        self.motors.close()
 
     def init_theta_set_point(self):
         global SET_PT_THETA

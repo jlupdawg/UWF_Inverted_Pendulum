@@ -4,6 +4,7 @@ import board
 from adafruit_pca9685 import PCA9685 #import the library for the digital to PWM converter
 import serial
 import time
+import SerialThread
 
 class Motors():
     def __init__(self, max_pwm=85, frequency=50, arduino_port='/dev/ttyUSB0'):
@@ -24,9 +25,10 @@ class Motors():
         	stopbits=serial.STOPBITS_ONE,
 	        )
 
+        self.serial_thread = SerialThread.SerialThread(self.serial_port)
+        self.serial_thread.start()
         # Wait a second to let the port initialize
         time.sleep(1)
-        self.serial_port.write('s'.encode())
         self.pos = 0
         
     def forward(self, DC):
@@ -57,11 +59,8 @@ class Motors():
             self.pca.channels[0].duty_cycle = 0
 
     def get_pos(self):
-        #Read position from arduino
-        self.serial_port.write('r'.encode())
-        while self.serial_port.inWaiting() == 0:
-            ###print("Waiting on serial.")
-            pass
-        self.pos = int(self.serial_port.readline().decode('utf-8')) / 1000 * 2 * 3.141592 * 0.05 #Read degrees and convert to meters
-        ###print("Read pos: ", self.pos)
+        self.pos = self.serial_thread.get_pos()
         return self.pos
+
+    def close(self):
+        self.serial_thread.stop()
