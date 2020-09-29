@@ -10,7 +10,7 @@ class Filtering():
         self.degrees = 2
         self.time_list =[0]*self.num_measurements
         self.angle_list = [0]*self.num_measurements
-        self.time_array = np.ones(self.num_measurements,self.degrees)
+        self.time_array = np.ones((self.num_measurements,self.degrees))
 
     def update_lists(self, new_time, new_angle):
         np.roll(self.time_list,1)
@@ -22,7 +22,7 @@ class Filtering():
     def update_arrays(self):
         for i in range(len(self.time_array)):
             for j in range(len(self.time_array[i])):
-                self.time_array[i][j] = time_list[j]^(i-1)
+                self.time_array[i][j] = self.time_list[j]^(i-1)
     
     def get_coeffs(self):
         self.update_arrays()
@@ -31,12 +31,10 @@ class Filtering():
     def get_derivedcoeffs(self):
         x = self.get_coeffs()
         y = len(x)
-        x.pop()
-        j = 0
-        for i in x:
-            x[j] = i*y
-            j = j+1
-        return x
+        z = []
+        for i in range(len(x)-1):
+            z.append(x[i]*(y-i))
+        return z
             
         
     

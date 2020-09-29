@@ -18,7 +18,7 @@ class Controller():
         derive = 0
         
         for x in derived_coeffs:
-            derive = derive + x*(self.curr_time/1000)^y
+            derive = derive + x*(int(self.curr_time/1000))^y
             y = y+1
         return derive
             
@@ -37,8 +37,8 @@ class Controller():
         self.curr_time = int(round(time.time() * 1000))  # get the current time
         #theta_dot = self.derivative(theta, self.prev_theta, self.curr_time, self.prev_time)
 
-        my_filter.update_lists(curr_time/1000,theta)
-        theta_dot = self.smoothed_derivative(my_filter.get_derivedcoeffs())
+        self.my_filter.update_lists(self.curr_time/1000,theta)
+        theta_dot = self.smoothed_derivative(self.my_filter.get_derivedcoeffs())
         x_dot = self.derivative(x, self.prev_x, self.curr_time, self.prev_time)
         
         pt = self.prev_time
