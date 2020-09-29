@@ -9,7 +9,17 @@ class Controller():
         self.max_x = max_x
         self.theta_integral = 0
         self.x_integral = 0
-
+        
+    def smoothed_derivative(self, derived_coeffs = [], thisTime):
+        derived_coeffs.reverse()
+        y = 0
+        derive = 0
+        
+        for x in derived_coeffs:
+            derive = derive + x*(thisTime/1000)^y
+            y = y+1
+        return derive
+            
     def derivative(self, new, last, thisTime, lastTime): #Find the derivative of theta
         dt = thisTime - lastTime
         if dt != 0:
