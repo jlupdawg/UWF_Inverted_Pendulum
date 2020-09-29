@@ -1,5 +1,6 @@
 #IMPORTS
 import time
+import Filtering
 
 class Controller():
     def __init__(self, max_theta=15, max_x=1):
@@ -9,14 +10,15 @@ class Controller():
         self.max_x = max_x
         self.theta_integral = 0
         self.x_integral = 0
+        self.my_filter = Filtering.Filtering()
         
-    def smoothed_derivative(self, derived_coeffs = [], thisTime):
+    def smoothed_derivative(self, derived_coeffs = []):
         derived_coeffs.reverse()
         y = 0
         derive = 0
         
         for x in derived_coeffs:
-            derive = derive + x*(thisTime/1000)^y
+            derive = derive + x*(self.curr_time/1000)^y
             y = y+1
         return derive
             
@@ -33,7 +35,10 @@ class Controller():
         theta *= 3.1415926/180
         
         self.curr_time = int(round(time.time() * 1000))  # get the current time
-        theta_dot = self.derivative(theta, self.prev_theta, self.curr_time, self.prev_time)
+        #theta_dot = self.derivative(theta, self.prev_theta, self.curr_time, self.prev_time)
+
+        my_filter.update_lists(curr_time/1000,theta)
+        theta_dot = self.smoothed_derivative(my_filter.get_derivedcoeffs())
         x_dot = self.derivative(x, self.prev_x, self.curr_time, self.prev_time)
         
         pt = self.prev_time

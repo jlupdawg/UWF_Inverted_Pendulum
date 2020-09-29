@@ -6,10 +6,11 @@ import Motors
 import Controller
 import time
 import sys
+import Filtering
 
 #CONTROLLER FLAGS
-#control_type = 'LQR'
-control_type = 'PID'
+control_type = 'LQR'
+#control_type = 'PID'
 #control_type = 'PD'
 #control_type = 'COMBINED_PID'
 

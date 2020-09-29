@@ -8,9 +8,9 @@ class Filtering():
     def __init__(self):
         self.num_measurements = 3
         self.degrees = 2
-        self.time_list =[0]*num_measurements
-        self.angle_list = [0]*num_measurements
-        self.time_array = np.ones(num_measurements,degrees)
+        self.time_list =[0]*self.num_measurements
+        self.angle_list = [0]*self.num_measurements
+        self.time_array = np.ones(self.num_measurements,self.degrees)
 
     def update_lists(self, new_time, new_angle):
         np.roll(self.time_list,1)
