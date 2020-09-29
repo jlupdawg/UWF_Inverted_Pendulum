@@ -14,7 +14,8 @@ control_type = 'LQR'
 #control_type = 'COMBINED_PID'
 
 #Controller Vectors
-k = [-10.0000/1.5, -30/1.5, 822, 85.5]
+#k = [-10, -30.3842, 845.1755, 62.9270]
+k = [-10, -30.3842, 1000, 85]
 pd = [3990, 0, 171]
 pid = [1431, 3768, 135]
 
@@ -29,9 +30,12 @@ SET_PT_THETA = -3.5464 * 3.141592 / 180
 SET_PT_X = 0
 
 #Global Variables
-max_pwm = 85
+max_pwm = 80
 max_theta = 15
 max_x = 1
+
+#Theta derivative filtering
+FILTER_SIZE = 2 #Size of running average of theta
 
 frequency = 1600 #PWM Frequency in Hz
 pwm_offset = 16.67
@@ -45,7 +49,7 @@ initialize_theta_set = True
 class Cart():
     
     def __init__(self):
-        global k, pd, pid, comb_pid, max_pwm, max_theta, max_x, frequency, pwm_offset, arduino_port, display_camera_output, initialize_theta_set
+        global k, pd, pid, comb_pid, max_pwm, max_theta, max_x, frequency, pwm_offset, arduino_port, display_camera_output, initialize_theta_set, FITER_SIZE
         #Cart variables
         self.max_pwm = max_pwm
         self.max_theta = max_theta
@@ -60,11 +64,11 @@ class Cart():
 
         #Motor, Controller, and Camera Instance Definition
         self.motors = Motors.Motors(max_pwm = self.max_pwm, frequency=self.frequency, arduino_port=self.arduino_port)
-        self.controller = Controller.Controller(max_theta = self.max_theta, max_x = self.max_x)
+        self.controller = Controller.Controller(FILTER_SIZE, max_theta = self.max_theta, max_x = self.max_x)
         self.camera = Camera.Camera(self.display_camera_output)
     
         #Controller Vectors
-        self.k = [-10.0000/1.5, -29.9836/1.5, 822.2578, 85.5362]
+        self.k = k
         self.pd = pd
         self.pid = pid
         self.comb_pid = comb_pid
@@ -80,9 +84,15 @@ class Cart():
             self.init_theta_set_point()
         
         while not break_flag:
+            currTime = int(round(time.time() * 1000))
             self.angle = self.camera.get_angle()
+            print("1: ", currTime - int(round(time.time() * 1000)))
+            currTime = int(round(time.time() * 1000))
+
             if control_type == 'LQR' or control_type == 'COMBINED_PID':
                 self.pos = self.motors.get_pos()
+            print("2: ", currTime - int(round(time.time() * 1000)))
+            currTime = int(round(time.time() * 1000))
 
             if self.status:
                 if control_type == 'LQR':
@@ -109,9 +119,14 @@ class Cart():
             else:
                 self.motors.backward(-self.duty_cycle + self.pwm_offset)
 
+            print("4: ", currTime - int(round(time.time() * 1000)))
+            currTime = int(round(time.time() * 1000))
             break_flag = self.camera.check_for_break()
+            print("5 ", currTime - int(round(time.time() * 1000)))
+            currTime = int(round(time.time() * 1000))
 
         self.camera.close()
+        self.controller.close()
 
     def init_theta_set_point(self):
         global SET_PT_THETA

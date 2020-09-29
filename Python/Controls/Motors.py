@@ -31,7 +31,7 @@ class Motors():
         
     def forward(self, DC):
         DC = min(self.max_pwm, DC)  # Constrain motor speed
-        print("Forward at " + str(DC) + " speed")  #For inspection purposes
+        ###print("Forward at " + str(DC) + " speed")  #For inspection purposes
         
         DC = int((DC) * (65534) / (100)) #Convert the duty cycle from a percent 0-100 to a percent of MAXINT
         self.pca.channels[1].duty_cycle = 0  #direction to forward in HEX
@@ -45,7 +45,7 @@ class Motors():
 
     def backward(self, DC):
         DC = min(self.max_pwm, DC)  # Constrain motor speed
-        print("Backward at " + str(DC) + " speed")
+        ###print("Backward at " + str(DC) + " speed")
         
         DC = int((DC) * (65534) / (100)) 
         self.pca.channels[1].duty_cycle = 0xFFFE #direction to backward in HEX
@@ -60,8 +60,8 @@ class Motors():
         #Read position from arduino
         self.serial_port.write('r'.encode())
         while self.serial_port.inWaiting() == 0:
-            print("Waiting on serial.")
+            ###print("Waiting on serial.")
             pass
         self.pos = int(self.serial_port.readline().decode('utf-8')) / 1000 * 2 * 3.141592 * 0.05 #Read degrees and convert to meters
-        print("Read pos: ", self.pos)
+        ###print("Read pos: ", self.pos)
         return self.pos

@@ -6,8 +6,15 @@ import VideoGet
 import numpy as np
 
 class Camera():  
+
+    #Cropping Variables
+    ymax_offset = 60
+    ymin_offset = 0
+    xmax_offset = -100
+    xmin_offset = 100
+
     def __init__(self, display_camera_output = False):
-        self.cam_thread = VideoGet.VideoGet(cv.VideoCapture(self.gstreamer_pipeline(flip_method=0), cv.CAP_GSTREAMER)) #connect to the camera
+        self.cam_thread = VideoGet.VideoGet(cv.VideoCapture(self.gstreamer_pipeline(flip_method=2), cv.CAP_GSTREAMER)) #connect to the camera
         #self.cam_thread = VideoGet.VideoGet(cv.VideoCapture("nvarguscamerasrc ! nvvidconv ! xvimagesink ! appsink")) #connect to the camera
         self.cam_thread.start()
         print("Camera connected!")
@@ -15,8 +22,8 @@ class Camera():
         #initiate font
         self.font = cv.FONT_HERSHEY_SIMPLEX
         
-        frame_height = int(self.cam_thread.get_stream().get(cv.CAP_PROP_FRAME_HEIGHT))# - 110
-        frame_width = int(self.cam_thread.get_stream().get(cv.CAP_PROP_FRAME_WIDTH))# - 250
+        frame_height = int(self.cam_thread.get_stream().get(cv.CAP_PROP_FRAME_HEIGHT)) - 150
+        frame_width = int(self.cam_thread.get_stream().get(cv.CAP_PROP_FRAME_WIDTH)) - 900
         
         #instantiate images
         self.hsv_img = np.zeros((frame_height, frame_width, 3), dtype=np.uint8)
@@ -25,22 +32,11 @@ class Camera():
         self.threshold_img2 = np.zeros((frame_height, frame_width, 1), dtype=np.uint8)
         self.threshold_img2b = np.zeros((frame_height, frame_width, 1), dtype=np.uint8)
 
-        #DELETE THIS
-        self.threshold_imgt1 = np.zeros((frame_height, frame_width, 1), dtype=np.uint8)
-        self.threshold_imgt2 = np.zeros((frame_height, frame_width, 1), dtype=np.uint8)
-        self.threshold_imgt3 = np.zeros((frame_height, frame_width, 1), dtype=np.uint8)
-        self.threshold_imgt4 = np.zeros((frame_height, frame_width, 1), dtype=np.uint8)
-        self.threshold_imgt5 = np.zeros((frame_height, frame_width, 1), dtype=np.uint8)
-        self.threshold_imgt6 = np.zeros((frame_height, frame_width, 1), dtype=np.uint8)
-        self.threshold_imgt7 = np.zeros((frame_height, frame_width, 1), dtype=np.uint8)
-        self.threshold_imgt8 = np.zeros((frame_height, frame_width, 1), dtype=np.uint8)
-        self.threshold_imgt9 = np.zeros((frame_height, frame_width, 1), dtype=np.uint8)
-
         self.display_camera_output = display_camera_output
 
         time.sleep(3)
 
-    def gstreamer_pipeline(self, capture_width=1280, capture_height=720, display_width=1280, display_height=600, framerate=60, flip_method=1):   
+    def gstreamer_pipeline(self, capture_width=1280, capture_height=720, display_width=1280, display_height=600, framerate=60, flip_method=0):   
         return ('nvarguscamerasrc ! ' 
         'video/x-raw(memory:NVMM), '
         'width=(int)%d, height=(int)%d, '
@@ -56,11 +52,11 @@ class Camera():
     def get_angle(self):
         while self.cam_thread.get_stream().isOpened():
             #capture the image from the cam
-            print("Attempting to receive image from camera thread.")
+            ###print("Attempting to receive image from camera thread.")
             ret_val, img = self.cam_thread.read();
             if not ret_val:
                 continue
-            #img = img[0:len(img)-60, 100:len(img[1])-100]
+            img = img[150:len(img), 400:len(img[1])-500]
  
             #convert the image to HSV
             self.hsv_img = cv.cvtColor(img, cv.COLOR_BGR2HSV)
@@ -73,51 +69,16 @@ class Camera():
             cv.add(self.threshold_img1, self.threshold_img1a, self.threshold_img1)          #this is combining the two limits for red
 	    #cv.inRange(self.hsv_img,(36,25,25),(70,255,255), self.threshold_img2)  #Green
             cv.inRange(self.hsv_img,(85,150,50),(135,255,255), self.threshold_img2)  #Blue
-            
-
-            #DELETE THIS
-            '''cv.inRange(self.hsv_img,(160,0,100),(179,100,150), self.threshold_imgt1) #red
-            cv.inRange(self.hsv_img,(160,0,150),(179,100,200), self.threshold_imgt2) #red
-            cv.inRange(self.hsv_img,(160,0,200),(179,100,255), self.threshold_imgt3) #red
-            cv.inRange(self.hsv_img,(160,100,100),(179,255,150), self.threshold_imgt4) #red
-            cv.inRange(self.hsv_img,(160,100,150),(179,255,200), self.threshold_imgt5) #red
-            cv.inRange(self.hsv_img,(160,100,200),(179,255,255), self.threshold_imgt6) #red'''
-            #cv.inRange(self.hsv_img,(0,150,100),(10,255,255), self.threshold_img1) #red
-            #cv.inRange(self.hsv_img,(0,150,100),(10,255,255), self.threshold_img1) #red
-            #cv.inRange(self.hsv_img,(0,150,100),(10,255,255), self.threshold_img1) #red
 
 	    #filter out noise
             blue_kernel = np.ones((5,5), np.uint8) 
             red_kernel = np.ones((3,3), np.uint8) 
+
             self.threshold_img2 = cv.erode(self.threshold_img2, blue_kernel, iterations=3) 
             self.threshold_img2 = cv.dilate(self.threshold_img2, blue_kernel, iterations=5)
-            '''self.threshold_img1 = cv.erode(self.threshold_img1, red_kernel, iterations=5) 
-            self.threshold_img1 = cv.dilate(self.threshold_img1, red_kernel, iterations=5) '''
 
-            #DELETE THIS
-            '''self.threshold_imgt1 = cv.erode(self.threshold_imgt1, red_kernel, iterations=5) 
-            self.threshold_imgt1 = cv.dilate(self.threshold_imgt1, red_kernel, iterations=5) 
-            self.threshold_imgt2 = cv.erode(self.threshold_imgt2, red_kernel, iterations=5) 
-            self.threshold_imgt2 = cv.dilate(self.threshold_imgt2, red_kernel, iterations=5) 
-            self.threshold_imgt3 = cv.erode(self.threshold_imgt3, red_kernel, iterations=5) 
-            self.threshold_imgt3 = cv.dilate(self.threshold_imgt3, red_kernel, iterations=5) 
-            self.threshold_imgt4 = cv.erode(self.threshold_imgt4, red_kernel, iterations=5) 
-            self.threshold_imgt4 = cv.dilate(self.threshold_imgt4, red_kernel, iterations=5) 
-            self.threshold_imgt5 = cv.erode(self.threshold_imgt5, red_kernel, iterations=5) 
-            self.threshold_imgt5 = cv.dilate(self.threshold_imgt5, red_kernel, iterations=5) 
-            self.threshold_imgt6 = cv.erode(self.threshold_imgt6, red_kernel, iterations=5) 
-            self.threshold_imgt6 = cv.dilate(self.threshold_imgt6, red_kernel, iterations=5) '''
-
-            cv.imshow("Reds", self.threshold_img1)
+            #cv.imshow("Reds", self.threshold_img1)
             #cv.imshow("Blues", self.threshold_img2)
-
-            #DELETE THIS
-            '''cv.imshow("t1", self.threshold_imgt1)
-            cv.imshow("t2", self.threshold_imgt2)
-            cv.imshow("t3", self.threshold_imgt3)
-            cv.imshow("t4", self.threshold_imgt4)
-            cv.imshow("t5", self.threshold_imgt5)
-            cv.imshow("t6", self.threshold_imgt6)'''
 	   
 	    #determine the moments of the two objects
             moments1=cv.moments(self.threshold_img1)
@@ -159,7 +120,7 @@ class Camera():
             try:
             	angle = float(math.atan((y1-y2)/(x2-x1))*180/math.pi)  #fails if the rod is perfectly vertical
             except:
-                print("Entered angle except.")
+                ###print("Entered angle except.")
                 angle = 0
                 continue
 
@@ -177,11 +138,11 @@ class Camera():
                     #display frames to users
                     cv.imshow("Target",img)
 
-            print("Angle:", angle)
+            ###print("Angle:", angle)
             return angle
 
     def check_for_break(self):
-        c = cv.waitKey(7) % 0x100
+        c = cv.waitKey(1) % 0x100
         if c == 27 or c == 10:
             return True
         return False
