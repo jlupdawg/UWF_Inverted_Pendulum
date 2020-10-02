@@ -11,6 +11,7 @@ class VideoGet:
     def __init__(self, vc):
         self.stream = vc
         self.grabbed = self.stream.grab()
+        self.frame = []
         #(self.grabbed, self.frame) = self.stream.read()
         self.stopped = False
 
@@ -24,20 +25,28 @@ class VideoGet:
 
     def get(self):
         while not self.stopped:
-            if not self.grabbed:
-                pass
+            #(grabbed, frame) = self.stream.read()
+            grabbed = self.stream.grab()
+            if not grabbed:
+                continue
                 #self.stop()
             else:
-                self.grabbed = self.stream.grab()
-                #(self.grabbed, self.frame) = self.stream.read()
+                self.grabbed = grabbed
+                #(self.grabbed, self.frame) = (grabbed, frame)
         raise SystemExit()
 
     def read(self):
-        return self.stream.retrieve()
-        #return (self.grabbed, self.frame)
+        if self.grabbed:
+            return self.stream.retrieve()
+            #return (self.grabbed, self.frame)
+        else:
+            return (False, [0])
 
     def get_grabbed(self):
         return self.grabbed
+
+    def clear_grabbed(self):
+        self.grabbed = False
 
     def stop(self):
         print("Dedicated camera thread stopped.")

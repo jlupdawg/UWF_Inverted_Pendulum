@@ -36,7 +36,7 @@ class Camera():
 
         time.sleep(3)
 
-    def gstreamer_pipeline(self, capture_width=1280, capture_height=720, display_width=1280, display_height=600, framerate=60, flip_method=0):   
+    def gstreamer_pipeline(self, capture_width=1280, capture_height=720, display_width=1280, display_height=600, framerate=90, flip_method=0):   
         return ('nvarguscamerasrc ! ' 
         'video/x-raw(memory:NVMM), '
         'width=(int)%d, height=(int)%d, '
@@ -54,8 +54,9 @@ class Camera():
             #capture the image from the cam
             ###print("Attempting to receive image from camera thread.")
             currTime = int(round(time.time() * 1000))
-            ret_val, img = self.cam_thread.read();
-            print("8 ", currTime - int(round(time.time() * 1000)))
+            ret_val, img = self.cam_thread.read()
+            self.cam_thread.clear_grabbed()
+            #print("8 ", currTime - int(round(time.time() * 1000)))
             currTime = int(round(time.time() * 1000))
 
             if not ret_val:

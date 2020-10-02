@@ -15,7 +15,7 @@ control_type = 'LQR'
 
 #Controller Vectors
 #k = [-10, -30.3842, 845.1755, 62.9270]
-k = [-10, -30.3842, 1000, 85]
+k = [-10, -30.3842, 1000, 90]#85]
 pd = [3990, 0, 171]
 pid = [1431, 3768, 135]
 
@@ -35,7 +35,7 @@ max_theta = 15
 max_x = 1
 
 #Theta derivative filtering
-FILTER_SIZE = 2 #Size of running average of theta
+FILTER_SIZE = 1 #Size of running average of theta
 
 frequency = 1600 #PWM Frequency in Hz
 pwm_offset = 16.67
@@ -121,7 +121,7 @@ class Cart():
 
             print("4: ", currTime - int(round(time.time() * 1000)))
             currTime = int(round(time.time() * 1000))
-            break_flag = self.camera.check_for_break()
+            if display_camera_output: break_flag = self.camera.check_for_break()
             print("5 ", currTime - int(round(time.time() * 1000)))
             currTime = int(round(time.time() * 1000))
 
