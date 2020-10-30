@@ -22,7 +22,7 @@ class Camera():
         #initiate font
         self.font = cv.FONT_HERSHEY_SIMPLEX
         
-        frame_height = int(self.cam_thread.get_stream().get(cv.CAP_PROP_FRAME_HEIGHT)) - 150
+        frame_height = int(self.cam_thread.get_stream().get(cv.CAP_PROP_FRAME_HEIGHT)) - 120
         frame_width = int(self.cam_thread.get_stream().get(cv.CAP_PROP_FRAME_WIDTH)) - 900
         
         #instantiate images
@@ -61,7 +61,7 @@ class Camera():
 
             if not ret_val:
                 continue
-            img = img[150:len(img), 400:len(img[1])-500]
+            img = img[:len(img)-120, 420:len(img[1])-480]
             print("9 ", currTime - int(round(time.time() * 1000)))
             currTime = int(round(time.time() * 1000))
  

@@ -93,6 +93,9 @@ class Controller():
         print("DC: ", duty_cycle)
         print("DELTA: ", self.curr_time - pt)
 
+        write_states = [self.curr_time, duty_cycle, theta - set_pt_theta, self.theta_integral, theta_dot]
+        self.toFile(write_states) 
+
         return 1, duty_cycle
 
     def PID_pos(self, x, pid=[0,0,0], set_pt_x = 0):

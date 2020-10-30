@@ -17,7 +17,8 @@ control_type = 'LQR'
 #k = [-10, -30.3842, 845.1755, 62.9270]
 k = [-10, -30.3842, 1000, 90]#85]
 pd = [3990, 0, 171]
-pid = [1431, 3768, 135]
+pid = [1431, 5000, 370]#3768, 135]
+#pid = [1350, 4000, 0]
 
 comb_pid = [[1907, 4233, 201], [1936, 406, -15]] #Theta PID vector, x PID vector
 theta_weight = 0.8
@@ -43,7 +44,7 @@ pwm_offset = 16.67
 arduino_port = '/dev/ttyUSB0'
 
 #Booleans
-display_camera_output = False
+display_camera_output = True
 initialize_theta_set = True
 
 class Cart():
