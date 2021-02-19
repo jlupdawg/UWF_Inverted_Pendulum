@@ -17,15 +17,15 @@ class Motors():
         self.pca.frequency = frequency #Frequency = 50 hz... this may need changing for optimizing the motors
 
         #Serial port communication initialization
-        '''self.serial_port = serial.Serial(
+        self.serial_port = serial.Serial(
         	port=arduino_port, #CHANGE ME IF NEEDED
         	baudrate=115200,
         	bytesize=serial.EIGHTBITS,
         	parity=serial.PARITY_NONE,
         	stopbits=serial.STOPBITS_ONE,
-	        )'''
+	        )
 
-        self.serial_thread = SerialThread.SerialThread(None)
+        self.serial_thread = SerialThread.SerialThread(self.serial_port)
         self.serial_thread.start()
         # Wait a second to let the port initialize
         time.sleep(1)
@@ -59,7 +59,6 @@ class Motors():
             self.pca.channels[0].duty_cycle = 0
 
     def get_pos(self):
-        #print("Calling Motors")
         self.pos = self.serial_thread.get_pos()
         return self.pos
 

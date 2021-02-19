@@ -18,8 +18,8 @@ void loop() {
   if (cmd == 's'){ //Set
     num = 0;
   }
-  else{// if (cmd == 'r'){ //Read
-    Serial.println(float(num)/128*360);
+  else if (cmd != 'x'){ //Read
+    Serial.print(float(num)/128*360);Serial.print("\n");
   }
 }
 

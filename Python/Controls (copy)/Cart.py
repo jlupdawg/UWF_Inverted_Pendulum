@@ -1,11 +1,11 @@
-#Command to free up camera resources: sudo systemctl restart nvargus-daemon	
 
 #IMPORTS
-import Camera
 import Motors
 import Controller
 import time
 import sys
+import Encoder
+import serial
 
 #CONTROLLER FLAGS
 control_type = 'LQR'
@@ -42,15 +42,15 @@ frequency = 1600 #PWM Frequency in Hz
 pwm_offset = 16.67
 
 arduino_port = '/dev/ttyUSB0'
+encoder_port = '/dev/ttyUSB1'
 
 #Booleans
-display_camera_output = True
 initialize_theta_set = True
 
 class Cart():
     
     def __init__(self):
-        global k, pd, pid, comb_pid, max_pwm, max_theta, max_x, frequency, pwm_offset, arduino_port, display_camera_output, initialize_theta_set, FITER_SIZE
+        global k, pd, pid, comb_pid, max_pwm, max_theta, max_x, frequency, pwm_offset, arduino_port,initialize_theta_set, FITER_SIZE, encoder_port
         #Cart variables
         self.max_pwm = max_pwm
         self.max_theta = max_theta
@@ -58,16 +58,15 @@ class Cart():
         self.frequency = frequency
         self.pwm_offset = pwm_offset
         self.arduino_port = arduino_port
+	self.encoder_port = encoder_port
 
         #Booleans
-        self.display_camera_output = display_camera_output
         self.initialize_theta_set = initialize_theta_set
 
         #Motor, Controller, and Camera Instance Definition
         self.motors = Motors.Motors(max_pwm = self.max_pwm, frequency=self.frequency, arduino_port=self.arduino_port)
         self.controller = Controller.Controller(FILTER_SIZE, max_theta = self.max_theta, max_x = self.max_x)
-        self.camera = Camera.Camera(self.display_camera_output)
-    
+
         #Controller Vectors
         self.k = k
         self.pd = pd
@@ -76,6 +75,21 @@ class Cart():
 
 
         self.status = 1
+
+        #Serial port communication initialization
+        self.enc_port = serial.Serial(
+        	port=encoder_port, #CHANGE ME IF NEEDED
+        	baudrate=9600,
+        	bytesize=serial.EIGHTBITS,
+        	parity=serial.PARITY_NONE,
+        	stopbits=serial.STOPBITS_ONE,
+	        )
+
+        self.encoder_thread = Encoder.Encoder(self.enc_port)
+        self.encoder_thread.start()
+        # Wait a second to let the port initialize
+        time.sleep(1)
+        self.pos = 0
 
     def run(self):
         global SET_PT_X, SET_PT_THETA, control_type
@@ -86,13 +100,13 @@ class Cart():
         
         while not break_flag:
             currTime = int(round(time.time() * 1000))
-            self.angle = self.camera.get_angle()
-            #print("1: ", currTime - int(round(time.time() * 1000)))
+            self.angle = self.encoder_thread.get_ang()
+            print("1: ", currTime - int(round(time.time() * 1000)))
             currTime = int(round(time.time() * 1000))
 
             if control_type == 'LQR' or control_type == 'COMBINED_PID':
                 self.pos = self.motors.get_pos()
-            #print("2: ", currTime - int(round(time.time() * 1000)))
+            print("2: ", currTime - int(round(time.time() * 1000)))
             currTime = int(round(time.time() * 1000))
 
             if self.status:
@@ -120,13 +134,13 @@ class Cart():
             else:
                 self.motors.backward(-self.duty_cycle + self.pwm_offset)
 
-            #"4: ", currTime - int(round(time.time() * 1000)))
+            print("4: ", currTime - int(round(time.time() * 1000)))
             currTime = int(round(time.time() * 1000))
             if display_camera_output: break_flag = self.camera.check_for_break()
-            #print("5 ", currTime - int(round(time.time() * 1000)))
+            print("5 ", currTime - int(round(time.time() * 1000)))
             currTime = int(round(time.time() * 1000))
 
-        self.camera.close()
+ 
         self.controller.close()
         self.motors.close()
 

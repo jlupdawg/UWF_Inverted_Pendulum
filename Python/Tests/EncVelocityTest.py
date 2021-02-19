@@ -87,16 +87,16 @@ def main():
 		prev_micros = curr_micros = 0.0
 		prev_pos = 0
 		#while int(round(time.time() * 1000)) - start_time < 2000:
-		while int(pos) < max_dist:
+		while float(pos) < max_dist:
 			curr_micros = datetime.now().second * 1000000 + datetime.now().microsecond
 			if curr_micros != prev_micros:
 				serial_port.write('r'.encode())
 				while serial_port.inWaiting() == 0:
 					pass
-				pos = serial_port.readline().decode('utf-8')
-
+				pos = (serial_port.readline().rstrip()).decode('utf-8')
+				print(pos)
 				if pos != prev_pos:
-					print(pos)
+					#print(pos)
 					prev_micros = curr_micros
 					prev_pos = pos
 					file1.write(str(curr_micros) + " ")

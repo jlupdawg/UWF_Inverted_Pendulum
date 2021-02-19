@@ -62,13 +62,13 @@ class Camera():
             if not ret_val:
                 continue
             img = img[:len(img), 420:len(img[1])-480]
-            #print("9 ", currTime - int(round(time.time() * 1000)))
+            print("9 ", currTime - int(round(time.time() * 1000)))
             currTime = int(round(time.time() * 1000))
  
             #convert the image to HSV
             self.hsv_img = cv.cvtColor(img, cv.COLOR_BGR2HSV)
 
-            #print("10 ", currTime - int(round(time.time() * 1000)))
+            print("10 ", currTime - int(round(time.time() * 1000)))
             currTime = int(round(time.time() * 1000))
 	    #self.hsv_img = cv.GaussianBlur(self.hsv_img, (0, 0), 2)
  
@@ -78,7 +78,7 @@ class Camera():
             cv.add(self.threshold_img1, self.threshold_img1a, self.threshold_img1)          #this is combining the two limits for red
 	    #cv.inRange(self.hsv_img,(36,25,25),(70,255,255), self.threshold_img2)  #Green
             cv.inRange(self.hsv_img,(85,150,50),(135,255,255), self.threshold_img2)  #Blue
-            #print("11 ", currTime - int(round(time.time() * 1000)))
+            print("11 ", currTime - int(round(time.time() * 1000)))
             currTime = int(round(time.time() * 1000))
 
 	    #filter out noise
@@ -87,7 +87,7 @@ class Camera():
 
             #self.threshold_img2 = cv.erode(self.threshold_img2, blue_kernel, iterations=3) 
             #self.threshold_img2 = cv.dilate(self.threshold_img2, blue_kernel, iterations=5)
-            #print("12 ", currTime - int(round(time.time() * 1000)))
+            print("12 ", currTime - int(round(time.time() * 1000)))
             currTime = int(round(time.time() * 1000))
 
             #cv.imshow("Reds", self.threshold_img1)
@@ -98,7 +98,7 @@ class Camera():
             moments2=cv.moments(self.threshold_img2)
             area1 = moments1['m00'] 
             area2 = moments2['m00'] 
-            #print("13 ", currTime - int(round(time.time() * 1000)))
+            print("13 ", currTime - int(round(time.time() * 1000)))
             currTime = int(round(time.time() * 1000))
              
             #initialize x and y
@@ -106,7 +106,7 @@ class Camera():
             coord_list=[x1,y1,x2,y2]
             for x in coord_list:
                 x=0
-            #print("14 ", currTime - int(round(time.time() * 1000)))
+            print("14 ", currTime - int(round(time.time() * 1000)))
             currTime = int(round(time.time() * 1000))
              
             #Ignore if the image was over-filtered (the area is too small)
@@ -128,7 +128,7 @@ class Camera():
  
 		#draw line measure angle
                 cv.line(img,(x1,y1),(x2,y2),(0,255,0),4,cv.LINE_AA)
-            #print("15 ", currTime - int(round(time.time() * 1000)))
+            print("15 ", currTime - int(round(time.time() * 1000)))
             currTime = int(round(time.time() * 1000))
 
             x1=float(x1)
@@ -142,7 +142,7 @@ class Camera():
                 ###print("Entered angle except.")
                 angle = 0
                 continue
-            #print("16 ", currTime - int(round(time.time() * 1000)))
+            print("16 ", currTime - int(round(time.time() * 1000)))
             currTime = int(round(time.time() * 1000))
 
             angle = round(angle, 2)
@@ -157,10 +157,10 @@ class Camera():
 	            #this is our angle text
                     cv.putText(img,str(angle),(int(x1)+50,int(int(y2)+int(y1)/2)), self.font, 4,(255,255,255))
                     #display frames to users
-                    cv.imshow("Target",img)
-            #print("17 ", currTime - int(round(time.time() * 1000)))
+                    #cv.imshow("Target",img)
+            print("17 ", currTime - int(round(time.time() * 1000)))
 
-            #print("Angle:", angle)
+            ###print("Angle:", angle)
             return angle
 
     def check_for_break(self):
