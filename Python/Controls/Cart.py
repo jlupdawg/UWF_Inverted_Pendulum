@@ -41,7 +41,7 @@ FILTER_SIZE = 1 #Size of running average of theta
 frequency = 1600 #PWM Frequency in Hz
 pwm_offset = 16.67
 
-arduino_port = '/dev/ttyUSB0'
+arduino_port = '/dev/arduino_top'
 
 #Booleans
 display_camera_output = True
@@ -79,6 +79,7 @@ class Cart():
 
     def run(self):
         global SET_PT_X, SET_PT_THETA, control_type
+        #print("Inside run")
         break_flag = False
 
         if self.initialize_theta_set:
@@ -87,6 +88,7 @@ class Cart():
         while not break_flag:
             currTime = int(round(time.time() * 1000))
             self.angle = self.camera.get_angle()
+            print("Adjusted angle: ", self.angle - SET_PT_THETA * 180 / 3.141592)
             #print("1: ", currTime - int(round(time.time() * 1000)))
             currTime = int(round(time.time() * 1000))
 
@@ -96,6 +98,7 @@ class Cart():
             currTime = int(round(time.time() * 1000))
 
             if self.status:
+                #print(self.status, " is status.")
                 if control_type == 'LQR':
                     self.status, self.duty_cycle = self.controller.LQR(self.angle, self.pos, K=self.k, set_pt_theta = SET_PT_THETA, set_pt_x = SET_PT_X)
                 elif control_type == 'PID':
@@ -120,12 +123,13 @@ class Cart():
             else:
                 self.motors.backward(-self.duty_cycle + self.pwm_offset)
 
-            #"4: ", currTime - int(round(time.time() * 1000)))
+            #print("4: ", currTime - int(round(time.time() * 1000)))
             currTime = int(round(time.time() * 1000))
             if display_camera_output: break_flag = self.camera.check_for_break()
             #print("5 ", currTime - int(round(time.time() * 1000)))
             currTime = int(round(time.time() * 1000))
 
+        print("Closing Down")        
         self.camera.close()
         self.controller.close()
         self.motors.close()

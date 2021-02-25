@@ -52,7 +52,7 @@ class Camera():
     def get_angle(self):
         while self.cam_thread.get_stream().isOpened():
             #capture the image from the cam
-            ###print("Attempting to receive image from camera thread.")
+            #print("Attempting to receive image from camera thread.")
             currTime = int(round(time.time() * 1000))
             ret_val, img = self.cam_thread.read()
             self.cam_thread.clear_grabbed()
@@ -170,7 +170,7 @@ class Camera():
         return False
 
     def close(self):
-        print("Closing camera and terminating thread.")
+        #print("Closing camera and terminating thread.")
         self.cam_thread.stop()
         cv.destroyAllWindows()
 

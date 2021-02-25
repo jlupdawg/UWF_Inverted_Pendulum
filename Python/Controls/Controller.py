@@ -17,6 +17,7 @@ class Controller():
     def derivative(self, new, last, thisTime, lastTime):
         dt = thisTime - lastTime
         if dt != 0:
+            #print(new, last, dt, type(new), type(last), type(dt))
             derive = (new - last)/(float(dt)/1000)
             return derive
         else: return 0
