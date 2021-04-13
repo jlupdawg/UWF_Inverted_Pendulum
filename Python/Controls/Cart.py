@@ -8,6 +8,8 @@ import time
 import sys
 
 #CONTROLLER FLAGS
+from SerialThread import SerialThread
+
 control_type = 'LQR'
 #control_type = 'PID'
 #control_type = 'PD'
@@ -15,7 +17,12 @@ control_type = 'LQR'
 
 #Controller Vectors
 #k= [-10, -30.3842, 845.1755, 62.9270]
-k = [-10, -30.3842, 1000, 85] #Too much oscillation
+#k= [-5, -15, 1500, 63] #This works pretty well
+k= [-5, -15, 1600, 75]
+#k= [-10, -30.3842, 900.1755, 135] #May work when battery fully charged
+#k= [-10, -30.3842, 930.1755, 100]
+#k = [-10, -30.3842, 1000, 85] #Too much oscillation
+
 pd = [3990, 0, 171]
 pid = [1431, 5000, 370]#3768, 135]
 #pid = [1350, 4000, 0]
@@ -27,11 +34,11 @@ x_weight = 0.2
 comb_pid = [[elem * theta_weight for elem in comb_pid[0]], [elem * x_weight for elem in comb_pid[1]]]
 
 #Set Points
-SET_PT_THETA = -3.5464 * 3.141592 / 180
+SET_PT_THETA = 180 * 3.141592 / 180
 SET_PT_X = 0
 
 #Global Variables
-max_pwm = 80
+max_pwm = 95
 max_theta = 15
 max_x = 1
 
@@ -59,12 +66,17 @@ class Cart():
         self.pwm_offset = pwm_offset
         self.arduino_port = arduino_port
 
+        self.f = open("timeAnalysis" + str(time.time()) + ".txt", "w")
+
         #Booleans
         self.display_camera_output = display_camera_output
         self.initialize_theta_set = initialize_theta_set
 
         #Motor, Controller, and Camera Instance Definition
         self.motors = Motors.Motors(max_pwm = self.max_pwm, frequency=self.frequency, arduino_port=self.arduino_port)
+        self.encoder2 = SerialThread()
+        self.encoder2.start()
+        self.encoder2pos = 0
         self.controller = Controller.Controller(FILTER_SIZE, max_theta = self.max_theta, max_x = self.max_x)
         self.camera = Camera.Camera(self.display_camera_output)
     
@@ -73,6 +85,9 @@ class Cart():
         self.pd = pd
         self.pid = pid
         self.comb_pid = comb_pid
+
+        self.filter_time = 0
+        self.sensor_time = 0
 
 
         self.status = 1
@@ -87,20 +102,27 @@ class Cart():
         
         while not break_flag:
             currTime = int(round(time.time() * 1000))
+            #self.angle, self.filter_time, self.sensor_time = self.camera.get_angle()
             self.angle = self.camera.get_angle()
+            # self.f.write(str(int(round(time.time() * 1000)) - currTime) + "\n")
+            self.encoder2pos = self.encoder2.get_pos()
             print("Adjusted angle: ", self.angle - SET_PT_THETA * 180 / 3.141592)
             #print("1: ", currTime - int(round(time.time() * 1000)))
             currTime = int(round(time.time() * 1000))
 
             if control_type == 'LQR' or control_type == 'COMBINED_PID':
                 self.pos = self.motors.get_pos()
+            print(str(self.pos))
             #print("2: ", currTime - int(round(time.time() * 1000)))
             currTime = int(round(time.time() * 1000))
+
+            #self.f.write(str(time.time() * 1000) + " " + str(self.angle - SET_PT_THETA * 180 / 3.141592) + " " + str(self.pos) + "\n")
+            #self.f.write(str(self.filter_time) + " " + str(self.sensor_time) + "\n")
 
             if self.status:
                 #print(self.status, " is status.")
                 if control_type == 'LQR':
-                    self.status, self.duty_cycle = self.controller.LQR(self.angle, self.pos, K=self.k, set_pt_theta = SET_PT_THETA, set_pt_x = SET_PT_X)
+                    self.status, self.duty_cycle = self.controller.LQR(self.angle, self.pos, self.encoder2pos, K=self.k, set_pt_theta = SET_PT_THETA, set_pt_x = 0)
                 elif control_type == 'PID':
                     self.status, self.duty_cycle = self.controller.PID(self.angle, pid=self.pid, set_pt_theta = SET_PT_THETA)
                 elif control_type == 'PD':
@@ -121,7 +143,7 @@ class Cart():
             if self.duty_cycle > 0:
                 self.motors.forward(self.duty_cycle + self.pwm_offset)
             else:
-                self.motors.backward(-self.duty_cycle + self.pwm_offset)
+                self.motors.backward(-self.duty_cycle - self.pwm_offset)
 
             #print("4: ", currTime - int(round(time.time() * 1000)))
             currTime = int(round(time.time() * 1000))
@@ -151,11 +173,11 @@ class Cart():
                 time.sleep(0.25)
                 angles = []
 
-                for i in range(50):
+                for i in range(100):
                     angles.append(self.camera.get_angle())
                     print(angles[-1])
 
-                SET_PT_THETA = sum(angles) / len(angles)  * 3.141592 / 180
+                SET_PT_THETA = sum(angles) / len(angles) * 3.141592 / 180
                 print("Theta set point:", SET_PT_THETA)
                 time.sleep(1)
                 return
@@ -163,4 +185,5 @@ class Cart():
 if __name__=="__main__":
     cart = Cart()
     cart.run()
+    cart.f.close()
         

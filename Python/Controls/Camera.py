@@ -23,8 +23,8 @@ class Camera():
         self.font = cv.FONT_HERSHEY_SIMPLEX
         
         frame_height = int(self.cam_thread.get_stream().get(cv.CAP_PROP_FRAME_HEIGHT))# - 120
-        frame_width = int(self.cam_thread.get_stream().get(cv.CAP_PROP_FRAME_WIDTH)) - 900
-        
+        frame_width = int(self.cam_thread.get_stream().get(cv.CAP_PROP_FRAME_WIDTH)) - 450
+
         #instantiate images
         self.hsv_img = np.zeros((frame_height, frame_width, 3), dtype=np.uint8)
         self.threshold_img1 = np.zeros((frame_height, frame_width, 1), dtype=np.uint8)
@@ -36,7 +36,7 @@ class Camera():
 
         time.sleep(3)
 
-    def gstreamer_pipeline(self, capture_width=1280, capture_height=720, display_width=1280, display_height=600, framerate=90, flip_method=0):   
+    def gstreamer_pipeline(self, capture_width=640, capture_height=360, display_width=640, display_height=300, framerate=90, flip_method=0):
         return ('nvarguscamerasrc ! ' 
         'video/x-raw(memory:NVMM), '
         'width=(int)%d, height=(int)%d, '
@@ -54,6 +54,8 @@ class Camera():
             #capture the image from the cam
             #print("Attempting to receive image from camera thread.")
             currTime = int(round(time.time() * 1000))
+            while (not self.cam_thread.frame_ready):
+                pass
             ret_val, img = self.cam_thread.read()
             self.cam_thread.clear_grabbed()
             #print("8 ", currTime - int(round(time.time() * 1000)))
@@ -61,7 +63,10 @@ class Camera():
 
             if not ret_val:
                 continue
-            img = img[:len(img), 420:len(img[1])-480]
+
+            t1 = time.time()
+
+            img = img[:len(img), 210:len(img[1])-240]
             #print("9 ", currTime - int(round(time.time() * 1000)))
             currTime = int(round(time.time() * 1000))
  
@@ -69,7 +74,6 @@ class Camera():
             self.hsv_img = cv.cvtColor(img, cv.COLOR_BGR2HSV)
 
             #print("10 ", currTime - int(round(time.time() * 1000)))
-            currTime = int(round(time.time() * 1000))
 	    #self.hsv_img = cv.GaussianBlur(self.hsv_img, (0, 0), 2)
  
             #threshold the image to isolate two colors
@@ -79,19 +83,19 @@ class Camera():
 	    #cv.inRange(self.hsv_img,(36,25,25),(70,255,255), self.threshold_img2)  #Green
             cv.inRange(self.hsv_img,(85,150,50),(135,255,255), self.threshold_img2)  #Blue
             #print("11 ", currTime - int(round(time.time() * 1000)))
-            currTime = int(round(time.time() * 1000))
 
 	    #filter out noise
-            blue_kernel = np.ones((5,5), np.uint8) 
-            red_kernel = np.ones((3,3), np.uint8) 
+            blue_kernel = np.ones((5,5), np.uint8)
+            # red_kernel = np.ones((3,3), np.uint8)
 
-            #self.threshold_img2 = cv.erode(self.threshold_img2, blue_kernel, iterations=3) 
-            #self.threshold_img2 = cv.dilate(self.threshold_img2, blue_kernel, iterations=5)
+            self.threshold_img2 = cv.erode(self.threshold_img2, blue_kernel, iterations=1)
+            self.threshold_img2 = cv.dilate(self.threshold_img2, blue_kernel, iterations=2)
             #print("12 ", currTime - int(round(time.time() * 1000)))
-            currTime = int(round(time.time() * 1000))
 
-            #cv.imshow("Reds", self.threshold_img1)
-            #cv.imshow("Blues", self.threshold_img2)
+            # cv.imshow("Reds", self.threshold_img1)
+            # cv.imshow("Blues", self.threshold_img2)
+
+            t2 = time.time()
 	   
 	    #determine the moments of the two objects
             moments1=cv.moments(self.threshold_img1)
@@ -107,8 +111,7 @@ class Camera():
             for x in coord_list:
                 x=0
             #print("14 ", currTime - int(round(time.time() * 1000)))
-            currTime = int(round(time.time() * 1000))
-             
+
             #Ignore if the image was over-filtered (the area is too small)
             if (area1 >10000):
                 #x and y coordinates of the center of the object is found by dividing the 1,0 and 0,1 moments by the area
@@ -157,11 +160,12 @@ class Camera():
 	            #this is our angle text
                     cv.putText(img,str(angle),(int(x1)+50,int(int(y2)+int(y1)/2)), self.font, 4,(255,255,255))
                     #display frames to users
-                    cv.imshow("Target",img)
+                    #cv.imshow("Target",img)
             #print("17 ", currTime - int(round(time.time() * 1000)))
 
             #print("Angle:", angle)
-            return angle
+            t3 = time.time()
+            return angle #, (t2 - t1), (t3 - t1)
 
     def check_for_break(self):
         c = cv.waitKey(1) % 0x100

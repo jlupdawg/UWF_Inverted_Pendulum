@@ -12,6 +12,8 @@ class Controller():
         self.filter = []
         self.theta_queue = [0, 0, 0]
         self.time_queue = [0, 0, 0]
+        self.theta_dot = 0
+        self.x_dot = 0
         print("FILTER_SIZE:", FILTER_SIZE)
 
     def derivative(self, new, last, thisTime, lastTime):
@@ -22,8 +24,8 @@ class Controller():
             return derive
         else: return 0
 
-    def LQR(self, theta, x, K=[0,0,0,0], set_pt_theta = 0, set_pt_x = 0):
-        if (theta > self.max_theta or theta < -self.max_theta):
+    def LQR(self, theta, x, angle2, K=[0,0,0,0], set_pt_theta = 0, set_pt_x = 0):
+        if ((theta-set_pt_theta) > self.max_theta or (theta - set_pt_theta) < -self.max_theta):
             return 0,0
         theta *= 3.1415926/180
 
@@ -52,17 +54,22 @@ class Controller():
         theta_dot = self.derivative(theta_avg, prev_theta_avg, self.curr_time, self.prev_time)
         #theta_dot = self.derivative(theta, self.prev_theta, self.curr_time, self.prev_time)
         x_dot = self.derivative(x, self.prev_x, self.curr_time, self.prev_time)
+
+        #Low-pass filter
+        self.theta_dot = 0.7 * self.theta_dot + 0.3 * theta_dot
+        self.x_dot = 0.7 * self.x_dot + 0.3 * x_dot
         
         pt = self.prev_time
         self.prev_time = self.curr_time
         self.prev_theta = theta
         self.prev_x = x
         
-        states = [(x-set_pt_x), x_dot, (theta-set_pt_theta), theta_dot]
+        states = [(x-set_pt_x), self.x_dot, (theta-set_pt_theta), self.theta_dot]
         duty_cycle = sum([states[i]*K[i] for i in range(len(K))])
 
-        write_states = [set_pt_theta, self.curr_time, duty_cycle]
-        write_states += states
+        #write_states = [set_pt_theta, self.curr_time, duty_cycle]
+        #write_states += states
+        write_states = [self.curr_time, (x-set_pt_x), self.x_dot, (theta-set_pt_theta), self.theta_dot, duty_cycle, angle2]
         self.toFile(write_states) 
 
         '''for state in states:

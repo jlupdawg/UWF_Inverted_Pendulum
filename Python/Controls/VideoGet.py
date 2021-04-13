@@ -15,6 +15,7 @@ class VideoGet:
         self.frame = []
         #(self.grabbed, self.frame) = self.stream.read()
         self.stopped = False
+        self.frame_ready = False
 
     def start(self): 
         self.t1 = Thread(target=self.get, args=())   
@@ -28,17 +29,20 @@ class VideoGet:
         while not self.stopped:
             #(grabbed, frame) = self.stream.read()
             grabbed = self.stream.grab()
+            self.grabbed = grabbed
             if not grabbed:
                 pass
                 #self.stop()
             else:
                 self.grabbed = grabbed
+                self.frame_ready = True
                 #(self.grabbed, self.frame) = (grabbed, frame)
         raise SystemExit()
 
     def read(self):
         if self.grabbed:
             return self.stream.retrieve()
+            self.frame_ready = False
             #return (self.grabbed, self.frame)
         else:
             return (False, [0])

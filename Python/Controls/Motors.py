@@ -5,6 +5,8 @@ from adafruit_pca9685 import PCA9685 #import the library for the digital to PWM 
 import serial
 import time
 import SerialThread
+from WheelSerialThread import WheelSerialThread
+
 
 class Motors():
     def __init__(self, max_pwm=85, frequency=50, arduino_port='/dev/ttyUSB0'):
@@ -25,7 +27,7 @@ class Motors():
         	stopbits=serial.STOPBITS_ONE,
 	        )'''
 
-        self.serial_thread = SerialThread.SerialThread(None)
+        self.serial_thread = WheelSerialThread()
         self.serial_thread.start()
         # Wait a second to let the port initialize
         time.sleep(1)
